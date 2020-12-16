@@ -1,0 +1,26 @@
+[758.0] [1426.5694444444443]
+756.0 719.3355555555555
+set phase
+
+moar cars:
+2092.0 540.520634920635
+
+moar seconds (3600) and moar cars:
+4248.0 1055.0583333333334
+
+
+for learning (1800):
+update_every = 1000
+mean vehicle count:  2352.6 with sd:  13.944174410842686 mean travel time:  494.1541666666667 with sd:  3.293466700965385
+
+update_every = 800
+mean vehicle count:  2346.2 with sd:  13.459569086712992 mean travel time:  492.14793650793655 with sd:  2.3179301396451026
+
+update_every = 500
+mean vehicle count:  2374.8 with sd:  12.172099243762352 mean travel time:  487.8572619047619 with sd:  1.8385354975015316
+
+update_every = 250
+mean vehicle count:  2339.0 with sd:  6.016643582596529 mean travel time:  493.9563492063492 with sd:  1.7517577466139178
+
+
+Update_every = 600 makes it very stable but also suboptimal

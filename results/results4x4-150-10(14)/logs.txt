@@ -1,0 +1,554 @@
+4x4/cityflow.config
+150
+1800
+10
+64
+0.0005
+mean vehicle count: 4825.4 with sd: 70.00457127931004
+mean travel time: 272.6552190830655 with sd: 7.948995550475149
+
+intersection_1_1
+phase -1 duration: 210
+phase 0 duration: 500
+phase 1 duration: 622
+phase 2 duration: 56
+phase 3 duration: 56
+phase 4 duration: 162
+phase 5 duration: 16
+phase 6 duration: 138
+phase 7 duration: 40
+
+phase -1 switch: 105
+phase 0 switch: 54
+phase 1 switch: 68
+phase 2 switch: 7
+phase 3 switch: 7
+phase 4 switch: 20
+phase 5 switch: 2
+phase 6 switch: 17
+phase 7 switch: 5
+
+movement 0 max wait time: 50.0
+movement 1 max wait time: 90.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 170.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 100.0
+movement 8 max wait time: 390.0
+movement 9 max wait time: 500.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 110.0
+
+intersection_1_2
+phase -1 duration: 206
+phase 0 duration: 514
+phase 1 duration: 612
+phase 2 duration: 80
+phase 3 duration: 72
+phase 4 duration: 128
+phase 5 duration: 16
+phase 6 duration: 120
+phase 7 duration: 52
+
+phase -1 switch: 103
+phase 0 switch: 57
+phase 1 switch: 65
+phase 2 switch: 10
+phase 3 switch: 9
+phase 4 switch: 16
+phase 5 switch: 2
+phase 6 switch: 15
+phase 7 switch: 6
+
+movement 0 max wait time: 60.0
+movement 1 max wait time: 170.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 120.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 100.0
+movement 8 max wait time: 430.0
+movement 9 max wait time: 470.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 90.0
+
+intersection_1_3
+phase -1 duration: 210
+phase 0 duration: 516
+phase 1 duration: 534
+phase 2 duration: 88
+phase 3 duration: 112
+phase 4 duration: 112
+phase 5 duration: 8
+phase 6 duration: 180
+phase 7 duration: 40
+
+phase -1 switch: 105
+phase 0 switch: 56
+phase 1 switch: 57
+phase 2 switch: 11
+phase 3 switch: 14
+phase 4 switch: 14
+phase 5 switch: 1
+phase 6 switch: 22
+phase 7 switch: 5
+
+movement 0 max wait time: 90.0
+movement 1 max wait time: 130.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 120.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 140.0
+movement 8 max wait time: 420.0
+movement 9 max wait time: 310.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 120.0
+
+intersection_1_4
+phase -1 duration: 192
+phase 0 duration: 544
+phase 1 duration: 596
+phase 2 duration: 40
+phase 3 duration: 96
+phase 4 duration: 154
+phase 5 duration: 0
+phase 6 duration: 98
+phase 7 duration: 80
+
+phase -1 switch: 96
+phase 0 switch: 58
+phase 1 switch: 64
+phase 2 switch: 5
+phase 3 switch: 13
+phase 4 switch: 19
+phase 5 switch: 0
+phase 6 switch: 12
+phase 7 switch: 9
+
+movement 0 max wait time: 110.0
+movement 1 max wait time: 140.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 160.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 130.0
+movement 8 max wait time: 660.0
+movement 9 max wait time: 590.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 80.0
+
+intersection_2_1
+phase -1 duration: 208
+phase 0 duration: 516
+phase 1 duration: 632
+phase 2 duration: 96
+phase 3 duration: 130
+phase 4 duration: 104
+phase 5 duration: 0
+phase 6 duration: 72
+phase 7 duration: 42
+
+phase -1 switch: 104
+phase 0 switch: 58
+phase 1 switch: 68
+phase 2 switch: 12
+phase 3 switch: 15
+phase 4 switch: 13
+phase 5 switch: 0
+phase 6 switch: 9
+phase 7 switch: 5
+
+movement 0 max wait time: 70.0
+movement 1 max wait time: 120.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 150.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 80.0
+movement 8 max wait time: 290.0
+movement 9 max wait time: 200.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 80.0
+
+intersection_2_2
+phase -1 duration: 206
+phase 0 duration: 550
+phase 1 duration: 604
+phase 2 duration: 112
+phase 3 duration: 56
+phase 4 duration: 112
+phase 5 duration: 0
+phase 6 duration: 120
+phase 7 duration: 40
+
+phase -1 switch: 103
+phase 0 switch: 60
+phase 1 switch: 65
+phase 2 switch: 14
+phase 3 switch: 7
+phase 4 switch: 14
+phase 5 switch: 0
+phase 6 switch: 15
+phase 7 switch: 5
+
+movement 0 max wait time: 60.0
+movement 1 max wait time: 120.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 130.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 80.0
+movement 8 max wait time: 220.0
+movement 9 max wait time: 340.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 70.0
+
+intersection_2_3
+phase -1 duration: 200
+phase 0 duration: 576
+phase 1 duration: 622
+phase 2 duration: 88
+phase 3 duration: 56
+phase 4 duration: 88
+phase 5 duration: 0
+phase 6 duration: 120
+phase 7 duration: 50
+
+phase -1 switch: 100
+phase 0 switch: 63
+phase 1 switch: 67
+phase 2 switch: 11
+phase 3 switch: 7
+phase 4 switch: 11
+phase 5 switch: 0
+phase 6 switch: 15
+phase 7 switch: 6
+
+movement 0 max wait time: 80.0
+movement 1 max wait time: 270.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 50.0
+movement 5 max wait time: 130.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 90.0
+movement 8 max wait time: 360.0
+movement 9 max wait time: 400.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 80.0
+
+intersection_2_4
+phase -1 duration: 190
+phase 0 duration: 570
+phase 1 duration: 638
+phase 2 duration: 64
+phase 3 duration: 72
+phase 4 duration: 96
+phase 5 duration: 8
+phase 6 duration: 104
+phase 7 duration: 58
+
+phase -1 switch: 95
+phase 0 switch: 63
+phase 1 switch: 68
+phase 2 switch: 8
+phase 3 switch: 9
+phase 4 switch: 11
+phase 5 switch: 1
+phase 6 switch: 13
+phase 7 switch: 7
+
+movement 0 max wait time: 70.0
+movement 1 max wait time: 170.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 140.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 70.0
+movement 8 max wait time: 580.0
+movement 9 max wait time: 540.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 100.0
+
+intersection_3_1
+phase -1 duration: 194
+phase 0 duration: 616
+phase 1 duration: 620
+phase 2 duration: 88
+phase 3 duration: 74
+phase 4 duration: 104
+phase 5 duration: 0
+phase 6 duration: 80
+phase 7 duration: 24
+
+phase -1 switch: 97
+phase 0 switch: 68
+phase 1 switch: 66
+phase 2 switch: 11
+phase 3 switch: 9
+phase 4 switch: 13
+phase 5 switch: 0
+phase 6 switch: 10
+phase 7 switch: 3
+
+movement 0 max wait time: 50.0
+movement 1 max wait time: 150.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 70.0
+movement 5 max wait time: 180.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 50.0
+movement 8 max wait time: 270.0
+movement 9 max wait time: 370.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 90.0
+
+intersection_3_2
+phase -1 duration: 208
+phase 0 duration: 548
+phase 1 duration: 592
+phase 2 duration: 104
+phase 3 duration: 108
+phase 4 duration: 80
+phase 5 duration: 0
+phase 6 duration: 120
+phase 7 duration: 40
+
+phase -1 switch: 104
+phase 0 switch: 61
+phase 1 switch: 64
+phase 2 switch: 13
+phase 3 switch: 13
+phase 4 switch: 9
+phase 5 switch: 0
+phase 6 switch: 15
+phase 7 switch: 5
+
+movement 0 max wait time: 70.0
+movement 1 max wait time: 150.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 50.0
+movement 5 max wait time: 140.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 80.0
+movement 8 max wait time: 270.0
+movement 9 max wait time: 400.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 80.0
+
+intersection_3_3
+phase -1 duration: 214
+phase 0 duration: 516
+phase 1 duration: 556
+phase 2 duration: 88
+phase 3 duration: 124
+phase 4 duration: 114
+phase 5 duration: 0
+phase 6 duration: 132
+phase 7 duration: 56
+
+phase -1 switch: 107
+phase 0 switch: 57
+phase 1 switch: 60
+phase 2 switch: 11
+phase 3 switch: 15
+phase 4 switch: 14
+phase 5 switch: 0
+phase 6 switch: 16
+phase 7 switch: 7
+
+movement 0 max wait time: 70.0
+movement 1 max wait time: 150.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 150.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 90.0
+movement 8 max wait time: 280.0
+movement 9 max wait time: 230.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 90.0
+
+intersection_3_4
+phase -1 duration: 190
+phase 0 duration: 496
+phase 1 duration: 676
+phase 2 duration: 88
+phase 3 duration: 108
+phase 4 duration: 88
+phase 5 duration: 16
+phase 6 duration: 90
+phase 7 duration: 48
+
+phase -1 switch: 95
+phase 0 switch: 54
+phase 1 switch: 73
+phase 2 switch: 11
+phase 3 switch: 12
+phase 4 switch: 11
+phase 5 switch: 2
+phase 6 switch: 11
+phase 7 switch: 6
+
+movement 0 max wait time: 80.0
+movement 1 max wait time: 190.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 60.0
+movement 5 max wait time: 170.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 80.0
+movement 8 max wait time: 290.0
+movement 9 max wait time: 320.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 100.0
+
+intersection_4_1
+phase -1 duration: 190
+phase 0 duration: 542
+phase 1 duration: 402
+phase 2 duration: 64
+phase 3 duration: 80
+phase 4 duration: 134
+phase 5 duration: 46
+phase 6 duration: 292
+phase 7 duration: 50
+
+phase -1 switch: 95
+phase 0 switch: 59
+phase 1 switch: 44
+phase 2 switch: 8
+phase 3 switch: 10
+phase 4 switch: 16
+phase 5 switch: 5
+phase 6 switch: 32
+phase 7 switch: 6
+
+movement 0 max wait time: 130.0
+movement 1 max wait time: 120.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 70.0
+movement 5 max wait time: 190.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 180.0
+movement 8 max wait time: 430.0
+movement 9 max wait time: 370.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 200.0
+
+intersection_4_2
+phase -1 duration: 180
+phase 0 duration: 408
+phase 1 duration: 410
+phase 2 duration: 80
+phase 3 duration: 56
+phase 4 duration: 96
+phase 5 duration: 70
+phase 6 duration: 242
+phase 7 duration: 258
+
+phase -1 switch: 90
+phase 0 switch: 44
+phase 1 switch: 43
+phase 2 switch: 10
+phase 3 switch: 7
+phase 4 switch: 12
+phase 5 switch: 8
+phase 6 switch: 28
+phase 7 switch: 28
+
+movement 0 max wait time: 130.0
+movement 1 max wait time: 160.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 120.0
+movement 5 max wait time: 170.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 130.0
+movement 8 max wait time: 640.0
+movement 9 max wait time: 460.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 160.0
+
+intersection_4_3
+phase -1 duration: 196
+phase 0 duration: 560
+phase 1 duration: 524
+phase 2 duration: 40
+phase 3 duration: 114
+phase 4 duration: 112
+phase 5 duration: 40
+phase 6 duration: 124
+phase 7 duration: 90
+
+phase -1 switch: 98
+phase 0 switch: 61
+phase 1 switch: 56
+phase 2 switch: 5
+phase 3 switch: 14
+phase 4 switch: 14
+phase 5 switch: 5
+phase 6 switch: 15
+phase 7 switch: 10
+
+movement 0 max wait time: 90.0
+movement 1 max wait time: 140.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 80.0
+movement 5 max wait time: 150.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 140.0
+movement 8 max wait time: 290.0
+movement 9 max wait time: 230.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 130.0
+
+intersection_4_4
+phase -1 duration: 190
+phase 0 duration: 474
+phase 1 duration: 482
+phase 2 duration: 104
+phase 3 duration: 88
+phase 4 duration: 90
+phase 5 duration: 32
+phase 6 duration: 166
+phase 7 duration: 174
+
+phase -1 switch: 95
+phase 0 switch: 51
+phase 1 switch: 51
+phase 2 switch: 13
+phase 3 switch: 11
+phase 4 switch: 11
+phase 5 switch: 4
+phase 6 switch: 19
+phase 7 switch: 20
+
+movement 0 max wait time: 90.0
+movement 1 max wait time: 150.0
+movement 2 max wait time: 0.0
+movement 3 max wait time: 0.0
+movement 4 max wait time: 80.0
+movement 5 max wait time: 150.0
+movement 6 max wait time: 0.0
+movement 7 max wait time: 130.0
+movement 8 max wait time: 280.0
+movement 9 max wait time: 270.0
+movement 10 max wait time: 0.0
+movement 11 max wait time: 180.0
+
+
