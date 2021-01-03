@@ -95,7 +95,6 @@ class Intersection:
 
     def get_reward(self, eng):
         #compute intersection pressure
-        # return -np.abs(self.get_total_pressure(eng))
         return -np.abs(np.sum(self.get_time_weighted_pressure(eng)))
         # return -np.abs(np.sum(self.get_movements_pressure(eng)))
 
@@ -116,35 +115,16 @@ class Intersection:
         self.out_move_vehs = [[set() for i in range(12)]]
         self.in_move_vehs = [[set() for i in range(12)]]
 
-    def get_arr_dep_veh_num(self, eng):
-        lanes_vehs = eng.get_lane_vehicles()
-        prev_dep_vehs = self.out_move_vehs[-1]
-        prev_arr_vehs = self.in_move_vehs[-1]
-        vehs = []
-        departed_vehs = []
-        arrived_vehs = []
-        
-        for idx, elem in enumerate(self.movements_lanes_dict.values()):
-            current_vehs = set(lanes_vehs[elem[0][0]])
-            departed_vehs.append(len(prev_dep_vehs[idx] - current_vehs))
-            arrived_vehs.append(len(current_vehs - prev_arr_vehs[idx]))
-            
-            vehs.append(current_vehs)
-
-        self.out_move_vehs.append(vehs)
-        self.in_move_vehs.append(vehs)
-        return arrived_vehs, departed_vehs
-
     def get_time_weighted_pressure(self, eng):
         movements_pressure = []
         lanes_count = eng.get_lane_vehicle_count()
         pressure = 0
+        #EVERY CAR CONTRIBUTES PROPORTIONALLY TO ITS WAIT TIME
         wait_time = self.max_wait_time
 
         def multiplier(x):
             if x < 90: return 1
             else: return x / 90
-
 
         for idx, elem in enumerate(self.movements_lanes_dict.values()):
             pressure = lanes_count[elem[0][0]] * multiplier(wait_time[idx])
@@ -175,7 +155,7 @@ class Intersection:
     
     def get_out_lanes_veh_num(self, eng):
         lanes_vehs_dict = eng.get_lane_vehicle_count()
-        lanes_veh_num = []
+        lanes_veh_num = []            
         for road in self.out_roads:
             lanes = eng.get_road_lanes(road)
             for lane in lanes:
@@ -185,8 +165,71 @@ class Intersection:
     def get_in_lanes_veh_num(self, eng):
         lanes_vehs_dict = eng.get_lane_vehicle_count()
         lanes_veh_num = []
+
+        def multiplier(x):
+            if x < 90: return 1
+            else: return x / 90
+        
         for road in self.in_roads:
             lanes = eng.get_road_lanes(road)
             for lane in lanes:
-                lanes_veh_num.append(lanes_vehs_dict[lane])
+                lanes_veh_num.append(multiplier(lanes_vehs_dict[lane]))
         return lanes_veh_num
+
+
+
+class AnalyticalAgents:
+    
+    def __init__(self):
+        self.phase = phase
+        self.ID = ID
+        self.in_roads = in_roads
+        self.out_roads = out_roads
+
+        self.action = None
+        self.state = None
+
+        self.out_move_vehs = [[set() for i in range(12)]]
+        self.in_move_vehs = [[set() for i in range(12)]]
+
+        self.arr_vehs_num = []
+        self.dep_vehs_num = []
+
+        self.past_phases = []
+        
+        self.phases_duration = np.zeros(9)
+        self.total_duration = {}
+        for i in range(12):
+            self.total_duration.update({i : []})
+        
+        self.max_wait_time = np.zeros(12)
+        self.current_wait_time = np.zeros(12)
+
+        self.action_freq = 10
+
+    def get_dep_veh_num(self, eng, movement, start_time, end_time):
+        return np.sum(self.dep_vehs_num[start_time: end_time][movement])
+
+    def get_arr_veh_num(self, eng, movement, start_time, end_time):
+        return np.sum(self.arr_vehs_num[start_time: end_time][movement])
+    
+    def update_arr_dep_veh_num(self, eng):
+        lanes_vehs = eng.get_lane_vehicles()
+        prev_dep_vehs = self.out_move_vehs[-1]
+        prev_arr_vehs = self.in_move_vehs[-1]
+        vehs = []
+        departed_vehs = []
+        arrived_vehs = []
+        
+        for idx, elem in enumerate(self.movements_lanes_dict.values()):
+            current_vehs = set(lanes_vehs[elem[0][0]])
+            departed_vehs.append(len(prev_dep_vehs[idx] - current_vehs))
+            arrived_vehs.append(len(current_vehs - prev_arr_vehs[idx]))
+            
+            vehs.append(current_vehs)
+
+        self.out_move_vehs.append(vehs)
+        self.in_move_vehs.append(vehs)
+        
+        self.arr_vehs_num.append(arrived_vehs)
+        self.dep_vehs_num.append(departed_vehs)

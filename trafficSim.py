@@ -31,7 +31,7 @@ def parse_args():
                         )
     parser.add_argument("--num_sim_steps", default=1800, type=int, help="the number of simulation steps, one step corresponds to 1 second")
 
-    parser.add_argument("--update_freq", default=50, type=int,
+    parser.add_argument("--update_freq", default=10, type=int,
                         help="the frequency of the updates (training pass) of the deep-q-network, default=50")
     parser.add_argument("--batch_size", default=64, type=int, help="the size of the mini-batch used to train the deep-q-network, default=64")
     parser.add_argument("--lr", default=5e-4, type=int, help="the learning rate for the dqn, default=5e-4")
@@ -54,7 +54,7 @@ environ.eng.set_random_seed(2)
 log_phases = False
 
 for i_episode in range(num_episodes):
-    losses = []
+    logger.losses = []
     if i_episode == num_episodes-1:
         environ.eng.set_save_replay(open=True)
         environ.eng.set_replay_file("../" + logger.log_path + "/replayFile.txt")
@@ -76,7 +76,7 @@ for i_episode in range(num_episodes):
         if step == 0:
             if len(environ.memory)>environ.batch_size:
                 experience = environ.memory.sample()
-                losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))
+                logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))
         
     print(logger.reward, environ.eng.get_average_travel_time(), environ.eng.get_finished_vehicle_count())
     logger.log_measures(environ)

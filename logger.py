@@ -74,6 +74,7 @@ class Logger:
                 log_file.write("phase " + str(i) + " switch: " + str(len(agent.total_duration[i+1])) + "\n")
             log_file.write("\n")
 
+            log_file.write("avg max wait time: " + str(np.mean([x for x in agent.max_wait_time if x != 0])) + "\n")
             for i in range(12):
                 log_file.write("movement " + str(i) + " max wait time: " + str(agent.max_wait_time[i]) + "\n")
             log_file.write("\n")

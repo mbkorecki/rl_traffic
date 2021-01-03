@@ -71,11 +71,18 @@ class Environment:
                     action = agent.act(self.local_net, state, eps=self.eps)
 
                     #ADD CHECK IF THERE IS A CAR ON THAT LANE
+
+                    # movements = self.phase_to_movement[agent.phase]
+                    # for i, elem in zip(range(12), agent.movements_lanes_dict.values()):
+                    #     if i not in movements:
+                    #         # and len(elem[0][0]) != 0:
+                    #         agent.current_wait_time[i] += 10
+
                     movements = self.phase_to_movement[agent.phase]
                     for i in range(12):
                         if i not in movements:
                             agent.current_wait_time[i] += 10
-                        
+                            
                     if action != agent.phase:
                         movements = self.phase_to_movement[action]
                         for move in movements:
