@@ -5,6 +5,7 @@ import numpy as np
 
 from dqn import DQN, ReplayMemory, optimize_model
 from intersection import Intersection
+from analyticalAgent import AnalyticalAgent
 
 class Environment:
 
@@ -20,7 +21,6 @@ class Environment:
         self.target_net = DQN(n_states, n_actions, seed=2).to(self.device)
 
         self.update_freq = args.update_freq      # how often to update the network
-        self.action_freq = 10   #typical update freq for agents
         self.batch_size = args.batch_size
         
         self.eps_start = 1.0
@@ -47,8 +47,79 @@ class Environment:
         self.phase_to_vec = self.agents[0].phase_to_vec
         self.phase_to_movement = self.agents[0].phase_to_movement
         self.movement_to_phase = self.agents[0].movement_to_phase
-        
+        self.action_freq = self.agents[0].action_freq   #typical update freq for agents
 
+
+    def analysisStep(self, time, done, log_phases):
+        for agent in self.agents:
+            agent.update_arr_dep_veh_num(self.eng)
+
+        print(time)
+        if done:
+            for agent in self.agents:
+                print(agent.ID)
+                print(np.sum([x for x in agent.arr_vehs_num]))
+                print(np.sum([x for x in agent.dep_vehs_num]))
+            
+        for agent in self.agents:
+            if time % agent.action_freq == 0:
+                if agent.action_type == "act":
+                    priority = agent.get_priority_idx(self.eng, time)
+                    phases_priority = np.zeros(8)
+
+                    for phase in range(8):
+                        movements = self.phase_to_movement[phase]
+                        phase_prioirty = 0
+                        for move in movements:
+                            phase_prioirty += priority[move]
+
+                        phases_priority[phase] = phase_prioirty
+
+                    agent.action = np.argmax(phases_priority)
+
+
+                    ###LOGGING DATA###
+                    movements = self.phase_to_movement[agent.phase]
+                    for i, elem in zip(range(12), agent.movements_lanes_dict.values()):
+                        if i not in movements and len(elem[0][0]) != 0:
+                            agent.current_wait_time[i] += self.action_freq
+                    
+                    if agent.phase != agent.action:
+                        agent.set_phase(self.eng, -1)
+                        agent.action_freq = time + 2
+                        agent.action_type = "update"
+
+                        ###LOGGING DATA###
+                        movements = self.phase_to_movement[agent.action]
+                        for move in movements:
+                            if agent.max_wait_time[move] < agent.current_wait_time[move]:
+                                agent.max_wait_time[move] = agent.current_wait_time[move]
+                            agent.current_wait_time[move] = 0
+                        if log_phases:
+                            agent.total_duration[agent.phase+1].append(agent.phases_duration[agent.phase+1])
+                            agent.phases_duration[agent.phase+1] = 0
+                        
+                    else:
+                        agent.action_freq = time + self.action_freq
+
+                elif agent.action_type == "update":
+                    agent.set_phase(self.eng, agent.action)
+                    agent.action_freq = time + self.action_freq
+                    agent.action_type = "act"
+                    ###LOGGING DATA###
+                    if log_phases:
+                        agent.total_duration[agent.phase+1].append(agent.phases_duration[agent.phase+1])
+                        agent.phases_duration[agent.phase+1] = 0
+
+
+            ##### LOGGING DATA ######
+            if log_phases:
+                agent.phases_duration[agent.phase] += 1
+                agent.past_phases.append(agent.phase)
+
+        self.eng.next_step()
+
+        
     def step(self, time, done, log_phases):
 
         for agent in self.agents:
@@ -64,24 +135,16 @@ class Environment:
                     self.memory.add(agent.state, agent.action, reward, next_state, done)
 
                     agent.action_type = "act"
-                    agent.action_freq = self.action_freq
+                    agent.action_freq = time + self.action_freq
                                     
                 if agent.action_type == "act":
                     state = np.asarray(agent.observe(self.eng))
                     action = agent.act(self.local_net, state, eps=self.eps)
 
-                    #ADD CHECK IF THERE IS A CAR ON THAT LANE
-
-                    # movements = self.phase_to_movement[agent.phase]
-                    # for i, elem in zip(range(12), agent.movements_lanes_dict.values()):
-                    #     if i not in movements:
-                    #         # and len(elem[0][0]) != 0:
-                    #         agent.current_wait_time[i] += 10
-
                     movements = self.phase_to_movement[agent.phase]
-                    for i in range(12):
-                        if i not in movements:
-                            agent.current_wait_time[i] += 10
+                    for i, elem in zip(range(12), agent.movements_lanes_dict.values()):
+                        if i not in movements and len(elem[0][0]) != 0:
+                            agent.current_wait_time[i] += self.action_freq
                             
                     if action != agent.phase:
                         movements = self.phase_to_movement[action]
@@ -93,7 +156,7 @@ class Environment:
 
                         agent.set_phase(self.eng, -1)
                         agent.action_type = "update"
-                        agent.action_freq = time+2
+                        agent.action_freq = time + 2
 
                                                     
                         ##### LOGGING DATA ######
@@ -103,7 +166,7 @@ class Environment:
                         
                     else:
                         agent.action_type = "reward"
-                        agent.action_freq = self.action_freq
+                        agent.action_freq = time + self.action_freq
                             
                     agent.state = state
                     agent.action = action
@@ -112,7 +175,7 @@ class Environment:
                         
                     agent.set_phase(self.eng, agent.action)
                     agent.action_type = "reward"
-                    agent.action_freq = self.action_freq
+                    agent.action_freq = time + self.action_freq
                 
                     ##### LOGGING DATA ######
                     if log_phases:

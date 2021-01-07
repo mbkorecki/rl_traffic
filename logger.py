@@ -90,15 +90,22 @@ class Logger:
             plt.plot(agent.past_phases, '|', linewidth=25)
             figure = plt.gcf()
             figure.set_size_inches(20,10)
-            plt.xticks(np.arange(0, self.args.num_sim_steps+1, step=10))
+            # plt.xticks(np.arange(0, self.args.num_sim_steps+1, step=10))
             plt.ylabel('phase')
             plt.xlabel('time')
             plt.grid()
+            
             ax = plt.gcf().get_axes()[0]
             ax.spines['left'].set_position(('data', 0))
             ax.spines['bottom'].set_position(('data', 0))
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
+
+            ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=10), minor=True)
+            ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=100))
+            ax.set_yticks(np.arange(-1, 8, step=1))
+            ax.grid(which='minor', axis='both')
+            
             plt.savefig(self.log_path + '/phase' + str(agent.ID) + '.png', bbox_inches='tight')
             plt.clf()
 
