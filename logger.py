@@ -33,9 +33,10 @@ class Logger:
 
         self.reward = 0
         for agent in environ.agents:
-            self.reward += (agent.total_rewards / (self.args.num_sim_steps / environ.action_freq))
+            self.reward += (agent.total_rewards / agent.reward_count)
             agent.total_rewards = 0
-        
+            agent.reward_count = 0
+            
         self.plot_rewards.append(self.reward)
         self.veh_count.append(environ.eng.get_finished_vehicle_count())
         self.travel_time.append(environ.eng.get_average_travel_time())
