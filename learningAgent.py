@@ -232,6 +232,7 @@ class LearningAgent:
         pressure = 0
         for elem in self.movements_lanes_dict.values():
             pressure = int(lanes_count[elem[0][0]])
+            # SHOULD IT REALLY BE MEAN!?
             pressure -= int(np.mean([lanes_count[x] for x in elem[0][1]]))
             movements_pressure.append(pressure)
         return movements_pressure

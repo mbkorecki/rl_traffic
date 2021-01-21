@@ -2,6 +2,7 @@ import cityflow
 import torch
 import torch.optim as optim
 import numpy as np
+import matplotlib.pyplot as plt
 
 from dqn import DQN, ReplayMemory, optimize_model
 from learningAgent import LearningAgent
@@ -32,7 +33,8 @@ class Environment:
         self.memory = ReplayMemory(self.n_actions, batch_size=args.batch_size)
 
         self.agents = []
-
+        self.special_agents = []
+        self.num_phases = []
         if args.agents_type == 'analysis':
             self.step = self.analysisStep
         else:
@@ -54,24 +56,46 @@ class Environment:
             newAgent.init_phase_to_movement(self.eng)
             newAgent.init_phase_to_vec(self.eng)
 
-            if len(newAgent.phase_to_movement) <= 1:
-                newAgent.set_phase(self.eng, 0)
+            self.num_phases.append(len(newAgent.phase_to_movement))
+            non_clearing_phases = [x for x in newAgent.phase_to_movement.keys() if newAgent.phase_to_movement[x] != []]
+            if len(newAgent.phase_to_movement) <= 1 and newAgent.ID != '3630249566':
+                newAgent.set_phase(self.eng, list(newAgent.phase_to_movement.keys())[0])
             else:
-                self.agents.append(newAgent)
+                if len(newAgent.phase_to_movement) == 2:
+                    self.special_agents.append(newAgent)
+                else:
+                    self.agents.append(newAgent)
+
+       
+        print(len(self.num_phases))
+        print(np.histogram(self.num_phases, bins = range(max(self.num_phases))))
 
         print(len(self.agents))
+        print(len(self.special_agents))
         self.action_freq = 10   #typical update freq for agents
         
     def analysisStep(self, time, done, log_phases):
         print(time)
         lane_vehs = self.eng.get_lane_vehicles()
         waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
-
+        for agent in self.special_agents:
+            if time % agent.action_freq == 0:
+                if agent.action_type == "act":
+                    agent.set_phase(self.eng, agent.clearing_phase)
+                    agent.action_freq = time + 5
+                    agent.action_type = "update"
+                else:
+                    phase = [x for x in agent.phase_to_movement.keys() if agent.phase_to_movement[x] != []][0]
+                    agent.set_phase(self.eng, phase)
+                    agent.action_freq = time + 30
+                    agent.action_type = "act"
+                    
         for agent in self.agents:
             if time % agent.action_freq == 0:
                 if agent.action_type == "act":
                     agent.update_arr_dep_veh_num(self.eng, lane_vehs)
                     agent.action, agent.green_time = agent.act(self.eng, time, waiting_vehs)
+                    agent.update_wait_time(agent.action, agent.green_time)
                     # agent.green_time = 10
 
                     ###LOGGING DATA###
@@ -79,7 +103,7 @@ class Environment:
                     # for i, elem in zip(range(len(agent.movement_to_phase)), agent.movements_lanes_dict.values()):
                     #     if i not in movements and len(elem[0][0]) != 0:
                     #         agent.current_wait_time[i] += agent.green_time
-
+   
                     if agent.phase != agent.action:
                         agent.set_phase(self.eng, agent.clearing_phase)
                         agent.action_freq = time + 2
