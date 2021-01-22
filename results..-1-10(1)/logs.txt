@@ -1,0 +1,10 @@
+../4x4/1.config
+1
+1
+10
+64
+0.0005
+mean vehicle count: 0.0 with sd: 0.0
+mean travel time: 1.0 with sd: 0.0
+
+intersection_1_1

@@ -18,7 +18,7 @@ class Logger:
 
         self.reward = 0
         
-        self.log_path = "results" + args.sim_config.split('/')[0] + '-' + str(args.num_episodes) + '-' + str(args.update_freq)
+        self.log_path = "../results" + args.sim_config.split('/')[0] + '-' + str(args.num_episodes) + '-' + str(args.update_freq)
         old_path = self.log_path
         i = 1
 
@@ -32,12 +32,12 @@ class Logger:
     def log_measures(self, environ):
 
         self.reward = 0
-        for agent in environ.agents:
-            self.reward += (agent.total_rewards / agent.reward_count)
-            agent.total_rewards = 0
-            agent.reward_count = 0
+        # for agent in environ.agents:
+        #     self.reward += (agent.total_rewards / agent.reward_count)
+        #     agent.total_rewards = 0
+        #     agent.reward_count = 0
             
-        self.plot_rewards.append(self.reward)
+        # self.plot_rewards.append(self.reward)
         self.veh_count.append(environ.eng.get_finished_vehicle_count())
         self.travel_time.append(environ.eng.get_average_travel_time())
         self.episode_losses.append(np.mean(self.losses))
@@ -75,10 +75,10 @@ class Logger:
             #     log_file.write("phase " + str(i) + " switch: " + str(len(agent.total_duration[i+1])) + "\n")
             # log_file.write("\n")
 
-            log_file.write("avg max wait time: " + str(np.mean([x for x in agent.max_waiting_time if x != 0])) + "\n")
-            for i in range(len(agent.movement_to_phase)):
-                log_file.write("movement " + str(i) + " max wait time: " + str(agent.max_waiting_time[i]) + "\n")
-                log_file.write("movement " + str(i) + " avg wait time: " + str(np.mean(agent.avg_waiting_time[i])) + "\n")
+            # log_file.write("avg max wait time: " + str(np.mean([x for x in agent.max_waiting_time if x != 0])) + "\n")
+            for move in agent.movements.values():
+                log_file.write("movement " + str(move.ID) + " max wait time: " + str(move.max_waiting_time) + "\n")
+                log_file.write("movement " + str(move.ID) + " avg wait time: " + str(np.mean(move.waiting_time_list)) + "\n")
             log_file.write("\n")
     
         log_file.write("\n")

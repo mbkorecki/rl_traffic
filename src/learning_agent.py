@@ -6,7 +6,7 @@ from operator import add
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-class LearningAgent:
+class Learning_Agent:
     
     def __init__(self, phase=0, ID='', in_roads=[], out_roads=[]):
 
@@ -356,3 +356,6 @@ class LearningAgent:
                     RHS = arr_rate * end_time
 
             self.green_times.append(green_time)
+
+
+        

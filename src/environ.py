@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from dqn import DQN, ReplayMemory, optimize_model
-from learningAgent import LearningAgent
-from analyticalAgent import AnalyticalAgent
+from learning_agent import Learning_Agent
+from analytical_agent import Analytical_Agent
 
 class Environment:
 
@@ -35,33 +35,32 @@ class Environment:
         self.agents = []
         self.special_agents = []
         self.num_phases = []
-        if args.agents_type == 'analysis':
-            self.step = self.analysisStep
+        if args.agents_type == 'analytical':
+            self.step = self.analytical_step
         else:
-            self.step = self.learningStep
+            self.step = self.learning_step
         
         agent_ids = [x for x in self.eng.get_intersection_ids() if not self.eng.is_intersection_virtual(x)]
         for agent_id in agent_ids:
             if args.agents_type == 'analytical':
-                new_agent = AnalyticalAgent(phase=0, ID=agent_id,
+                new_agent = Analytical_Agent(phase=0, ID=agent_id,
                                         in_roads=self.eng.get_intersection_in_roads(agent_id),
                                         out_roads=self.eng.get_intersection_out_roads(agent_id)
                                         )
             else:
-                new_agent = LearningAgent(phase=0, ID=agent_id,
+                new_agent = Learning_Agent(phase=0, ID=agent_id,
                                         in_roads=self.eng.get_intersection_in_roads(agent_id),
                                         out_roads=self.eng.get_intersection_out_roads(agent_id)
                                         )
-            new_agent.init_movements_lanes_dict(self.eng)
-            new_agent.init_phase_to_movement(self.eng)
-            new_agent.init_phase_to_vec(self.eng)
+            new_agent.init_movements(self.eng)
+            new_agent.init_phases(self.eng)
 
-            self.num_phases.append(len(new_agent.phase_to_movement))
-            non_clearing_phases = [x for x in new_agent.phase_to_movement.keys() if new_agent.phase_to_movement[x] != []]
-            if len(new_agent.phase_to_movement) <= 1 and new_agent.ID != '3630249566':
-                new_agent.set_phase(self.eng, list(new_agent.phase_to_movement.keys())[0])
+            self.num_phases.append(len(new_agent.phases))
+            non_clearing_phases = [x for x in new_agent.phases.keys() if new_agent.phases[x].movements != []]
+            if len(new_agent.phases) <= 1 and new_agent.ID != '3630249566':
+                new_agent.set_phase(self.eng, list(new_agent.phases.keys())[0])
             else:
-                if len(new_agent.phase_to_movement) == 2:
+                if len(new_agent.phases) == 2:
                     self.special_agents.append(new_agent)
                 else:
                     self.agents.append(new_agent)
@@ -73,11 +72,12 @@ class Environment:
         print(len(self.agents))
         print(len(self.special_agents))
         self.action_freq = 10   #typical update freq for agents
-        
+
     def analytical_step(self, time, done, log_phases):
         print(time)
         lane_vehs = self.eng.get_lane_vehicles()
         waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
+        
         for agent in self.special_agents:
             if time % agent.action_freq == 0:
                 if agent.action_type == "act":
@@ -85,7 +85,7 @@ class Environment:
                     agent.action_freq = time + 5
                     agent.action_type = "update"
                 else:
-                    phase = [x for x in agent.phase_to_movement.keys() if agent.phase_to_movement[x] != []][0]
+                    phase = [x for x in agent.phases.keys() if agent.phases[x].movements != []][0]
                     agent.set_phase(self.eng, phase)
                     agent.action_freq = time + 30
                     agent.action_type = "act"
@@ -93,10 +93,9 @@ class Environment:
         for agent in self.agents:
             if time % agent.action_freq == 0:
                 if agent.action_type == "act":
-                    agent.update_arr_dep_veh_num(self.eng, lane_vehs)
+                    agent.update_arr_dep_veh_num(lane_vehs)
                     agent.action, agent.green_time = agent.act(self.eng, time, waiting_vehs)
-   
-                    if agent.phase != agent.action:
+                    if agent.phase.ID != agent.action.ID:
                         agent.set_phase(self.eng, agent.clearing_phase)
                         agent.action_freq = time + 2
                         agent.action_type = "update"
@@ -214,5 +213,4 @@ class Environment:
 
         for agent in self.agents:
             agent.reset_veh_num()
-            agent.max_wait_time = np.zeros(len(agent.movement_to_phase))
-            agent.current_wait_time = np.zeros(len(agent.movement_to_phase))
+            agent.reset_wait_times()
