@@ -67,17 +67,18 @@ class Logger:
 
         for agent in environ.agents:
             log_file.write(agent.ID + "\n")
-            for i in range(-1, environ.n_actions):
-                log_file.write("phase " + str(i) + " duration: " + str(agent.past_phases.count(i)) + "\n")
-            log_file.write("\n")
+            # for i in range(-1, agent.n_actions):
+            #     log_file.write("phase " + str(i) + " duration: " + str(agent.past_phases.count(i)) + "\n")
+            # log_file.write("\n")
 
-            for i in range(-1, environ.n_actions):
-                log_file.write("phase " + str(i) + " switch: " + str(len(agent.total_duration[i+1])) + "\n")
-            log_file.write("\n")
+            # for i in range(-1, agent.n_actions):
+            #     log_file.write("phase " + str(i) + " switch: " + str(len(agent.total_duration[i+1])) + "\n")
+            # log_file.write("\n")
 
-            log_file.write("avg max wait time: " + str(np.mean([x for x in agent.max_wait_time if x != 0])) + "\n")
-            for i in range(12):
-                log_file.write("movement " + str(i) + " max wait time: " + str(agent.max_wait_time[i]) + "\n")
+            log_file.write("avg max wait time: " + str(np.mean([x for x in agent.max_waiting_time if x != 0])) + "\n")
+            for i in range(len(agent.movement_to_phase)):
+                log_file.write("movement " + str(i) + " max wait time: " + str(agent.max_waiting_time[i]) + "\n")
+                log_file.write("movement " + str(i) + " avg wait time: " + str(np.mean(agent.avg_waiting_time[i])) + "\n")
             log_file.write("\n")
     
         log_file.write("\n")

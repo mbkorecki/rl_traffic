@@ -23,7 +23,7 @@ from logger import Logger
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--sim_config", default='4x4/1.config',  type=str, help="the relative path to the simulation config file")
+    parser.add_argument("--sim_config", default='../4x4/1.config',  type=str, help="the relative path to the simulation config file")
 
     parser.add_argument("--num_episodes", default=150, type=int,
                         help="the number of episodes to run (one episosde consists of a full simulation run for num_sim_steps)"
@@ -34,7 +34,7 @@ def parse_args():
                         help="the frequency of the updates (training pass) of the deep-q-network, default=50")
     parser.add_argument("--batch_size", default=64, type=int, help="the size of the mini-batch used to train the deep-q-network, default=64")
     parser.add_argument("--lr", default=5e-4, type=int, help="the learning rate for the dqn, default=5e-4")
-    parser.add_argument("--agents_type", default='analysis', type=str, help="the type of agents")
+    parser.add_argument("--agents_type", default='analytical', type=str, help="the type of agents")
 
     return parser.parse_args()
 
@@ -88,7 +88,7 @@ for i_episode in range(num_episodes):
 #             agent.max_wait_time[agent.phase] = agent.current_wait_time[agent.phase]
 
 
-# logger.save_log_file(environ)
+logger.save_log_file(environ)
 # logger.save_phase_plots(environ)
 # logger.save_measures_plots()
 # logger.save_models(environ)
