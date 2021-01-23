@@ -18,7 +18,7 @@ class Logger:
 
         self.reward = 0
         
-        self.log_path = "../results" + args.sim_config.split('/')[0] + '-' + str(args.num_episodes) + '-' + str(args.update_freq)
+        self.log_path = "../results" + args.sim_config.split('/')[1] + '-' + str(args.num_episodes) + '-' + str(args.update_freq)
         old_path = self.log_path
         i = 1
 

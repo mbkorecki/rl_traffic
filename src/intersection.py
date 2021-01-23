@@ -9,7 +9,8 @@ class Movement:
     """
     def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, lane_length, phases=[]):
         """
-        initialises the Movement
+        initialises the Movement, the movement has a type 1, 2 or 3
+        1 -> turn right, 2 -> turn left, 3 -> go straight
         :param ID: the unique (for a given intersection) ID associated with the movement
         :param in_road: the incoming road of the movement
         :param out_road: the outgoing road of the movement
@@ -32,7 +33,7 @@ class Movement:
         self.arr_vehs_num = []
         self.dep_vehs_num = []
 
-        self.move_type = None #1 -> turn right, 2 -> turn left, 3 -> go straight
+        self.move_type = None 
         self.max_saturation = 2.2
         self.max_speed = 11
         self.pass_time = int(np.ceil(self.length / self.max_speed))
@@ -48,6 +49,12 @@ class Movement:
         self.priority = 0
 
     def update_wait_time(self, action, green_time, waiting_vehs):
+        """
+        Updates movement's waiting time - the time a given movement has waited to be enabled
+        :param action: the phase to be chosen by the intersection
+        :param green_time: the green time the action is going to be enabled for
+        :param waiting_vehs: a dictionary with lane ids as keys and number of waiting cars as values
+        """
         if self.ID not in action.movements:
             if [x for x in self.in_lanes if waiting_vehs[x] > 0]:
                 self.waiting_time += green_time + 2
@@ -59,12 +66,26 @@ class Movement:
 
 
     def get_dep_veh_num(self, start_time, end_time):
+        """
+        gets the number of vehicles departed from the movement's lanes in a given interval
+        :param start_time: the start of the time interval
+        :param end_time: the end of the time interval
+        """
         return np.sum(self.dep_vehs_num[start_time: end_time])
 
     def get_arr_veh_num(self, start_time, end_time):
+        """
+        gets the number of vehicles arrived to the movement's lanes in a given interval
+        :param start_time: the start of the time interval
+        :param end_time: the end of the time interval
+        """
         return np.sum(self.arr_vehs_num[start_time: end_time])
 
     def update_arr_dep_veh_num(self, lanes_vehs):
+        """
+        Updates the list containing the number vehicles that arrived and departed
+        :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
+        """
         current_vehs = set()
 
         for lane in self.in_lanes:
@@ -76,7 +97,19 @@ class Movement:
         self.prev_vehs = current_vehs
 
         
+    def get_pressure(self, eng, lanes_count):
+        pressure = np.sum([lanes_count[x] for x in self.in_lanes])
+        # SHOULD IT REALLY BE MEAN!?
+        pressure -= int(np.mean([lanes_count[x] for x in self.out_lanes]))
+        self.pressure = pressure
+        return pressure
+        
 
+    def get_demand(self, eng, lanes_count):
+        demand = int(np.sum([lanes_count[x] for x in self.in_lanes]))
+        return demand
+
+    
 class Phase:
     """
     The class defining a Phase on an intersection, a Phase is defined by Movements which are enabled by it (given the green light)
@@ -91,3 +124,5 @@ class Phase:
 
         self.movements = movements
         self.vector = None
+        self.to_action = None
+        

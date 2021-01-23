@@ -41,7 +41,7 @@ def parse_args():
 args = parse_args()
 
 logger = Logger(args)
-environ = Environment(args, n_actions=8, n_states=32)
+environ = Environment(args, n_actions=8, n_states=33)
 
 num_episodes = args.num_episodes
 num_sim_steps = args.num_sim_steps
@@ -92,42 +92,3 @@ logger.save_log_file(environ)
 # logger.save_phase_plots(environ)
 # logger.save_measures_plots()
 # logger.save_models(environ)
-
-
-
-# def read_light_file(path):
-#     light_file = open(path, 'r')
-#     light_file = light_file.read().splitlines()
-#     time_phase_list = []
-    
-#     for line in light_file:
-#         time, phase = line.split(",")
-#         time_phase_list.append((int(float(time)),int(float(phase))))
-
-#     return time_phase_list
-
-# eng = cityflow.Engine(args.sim_config, thread_num=8)
-# agent_phases_dict = {}
-# agent_idx = {}
-# agent_ids = [x for x in eng.get_intersection_ids() if not eng.is_intersection_virtual(x)]
-
-# for agent_id in agent_ids:
-#     path = 'hangzhou/lights/signal_inter_' + agent_id + '.txt'
-#     time_phase_list = read_light_file(path)
-#     agent_phases_dict.update({agent_id : time_phase_list})
-#     agent_idx.update({agent_id : 0})
-#     eng.set_tl_phase(agent_id, 0)
-
-    
-# for t in range(600):
-#     eng.next_step()
-
-#     # for agent_id in agent_ids:
-#     #     if len(agent_phases_dict[agent_id]) <  agent_idx[agent_id]:
-#     #         schedule = agent_phases_dict[agent_id][agent_idx[agent_id]]
-#     #         if schedule[0] == t:
-#     #             eng.set_tl_phase(agent_id, schedule[1])
-#     #             agent_idx[agent_id] += 1
-
-#     print(t)
-# print(eng.get_average_travel_time(), eng.get_finished_vehicle_count())
