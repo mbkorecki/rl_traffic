@@ -8,7 +8,10 @@ from intersection import Movement, Phase
 
 
 class Analytical_Agent:
-    
+    """
+    The class defining an agent which controls the traffic lights using the analytical approach
+    from Helbing, Lammer's works
+    """
     def __init__(self, phase=[], ID='', in_roads=[], out_roads=[]):
         
         self.ID = ID

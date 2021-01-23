@@ -48,14 +48,16 @@ class Movement:
         self.priority = 0
 
     def update_wait_time(self, action, green_time, waiting_vehs):
-        if  [x for x in self.out_lanes if waiting_vehs[x] > 0]:
-            self.waiting_time += green_time + 2
+        if self.ID not in action.movements:
+            if [x for x in self.in_lanes if waiting_vehs[x] > 0]:
+                self.waiting_time += green_time + 2
         else:
             self.waiting_time_list.append(self.waiting_time)
             if  self.waiting_time > self.max_waiting_time:
                 self.max_waiting_time = self.waiting_time
             self.waiting_time = 0
-            
+
+
     def get_dep_veh_num(self, start_time, end_time):
         return np.sum(self.dep_vehs_num[start_time: end_time])
 
