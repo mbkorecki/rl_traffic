@@ -35,28 +35,25 @@ class Analytical_Agent(Agent):
         self.phase = phase
         
 
-    def act(self, eng, time, waiting_vehs):
+    def act(self, eng, time):
         """
         selects the next action - phase for the agent to select along with the time it should stay on for
         :param eng: the cityflow simulation engine
         :param time: the time in the simulation, at this moment only integer values are supported
-        :param waiting_vehs: a dictionary with lane ids as keys and number of waiting cars as values
         :returns: the phase and the green time
         """
-        self.update_priority_idx(time)
-        
+
+        self.update_clear_green_time(time)
+        self.stabilise(time)
+
         if not self.action_queue.empty():
-            phase, _, green_time = self.action_queue.get()
+            phase, green_time = self.action_queue.get()
             return phase, int(np.ceil(green_time))
-        else:
-            self.stabilise(time, waiting_vehs)
 
         if all([x.green_time == 0 for x in self.movements.values()]):
-            if self.phase.ID == self.clearing_phase.ID:
-                return list(self.phases.values())[0], 5
-            else:
                 return self.phase, 5
-
+        
+        self.update_priority_idx(time)
         phases_priority = {}
         
         for phase in self.phases.values():
@@ -69,42 +66,60 @@ class Analytical_Agent(Agent):
             phases_priority.update({phase.ID : phase_prioirty})
         
         action = self.phases[max(phases_priority.items(), key=operator.itemgetter(1))[0]]
-        return action, int(np.max([self.movements[x].green_time for x in action.movements]))
+        if not action.movements:
+            green_time = self.clearing_time
+        else:
+            green_time = int(np.max([self.movements[x].green_time for x in action.movements]))
+        return action, green_time
 
-    def stabilise(self, time, waiting_vehs):
+    def stabilise(self, time):
         """
         Implements the stabilisation mechanism of the algorithm, updates the action queue with phases that need to be prioritiesd
         :param time: the time in the simulation, at this moment only integer values are supported
-        :param waiting_vehs: a dictionary with lane ids as keys and number of waiting cars as values
         """
-        priority_list = []
+        def add_phase_to_queue(priority_list):
+            """
+            helper function called recursievely to add phases which need stabilising to the queue
+            """
+            phases_score = {}
+            phases_time = {}
+            for elem in priority_list:
+                for phaseID in elem[0].phases:
+                    if phaseID in phases_score.keys():
+                        phases_score.update({phaseID : phases_score[phaseID] + 1})
+                    else:
+                        phases_score.update({phaseID : 1})
+                    phases_time.update({phaseID : elem[1]})
+
+            if [x for x in phases_score.keys() if phases_score[x] != 0]:
+                idx = max(phases_score.items(), key=operator.itemgetter(1))[0]
+                self.action_queue.put((self.phases[idx], phases_time[idx]))
+                return [x for x in priority_list if idx not in x[0].phases]
+            else:
+                return []
+
+        T = 180
+        T_max = 240
         sum_Q = np.sum([x.arr_rate for x in self.movements.values()])
+        
+        priority_list = []
 
-        for phase in self.phases.values():
-            priority = 0
-            green_max = 0
-            for moveID in phase.movements:                
-                movement = self.movements[moveID]
-                Q = movement.arr_rate
-                z = movement.green_time + 2 + movement.waiting_time
-                T = 90
-                T_max = 150
-                n_crit = Q * T * ((T_max - z) / (T_max - T))
+        for movement in [x for x in self.movements.values() if x not in self.phase.movements]:                
+            Q = movement.arr_rate
+            z = movement.green_time + movement.clearing_time + movement.waiting_time
 
-                waiting = 0
-                lanes = movement.in_lanes
-                for lane in lanes:
-                    waiting += waiting_vehs[lane]
+            n_crit = Q * T * ((T_max - z) / (T_max - T))
 
-                if waiting >= n_crit:
-                    priority += (waiting - n_crit)
-                    T_res = T * (1 - sum_Q / movement.max_saturation) - 2 * len(self.movements)
-                    current_green_max = (Q / movement.max_saturation) * T + (1 / len(self.movements)) * T_res
-                    if current_green_max > green_max:
-                        green_max = current_green_max
-                    
-            if priority > 0:
-                self.action_queue.put((phase, priority, green_max))
+            waiting = movement.green_time * movement.max_saturation
+            if waiting > n_crit:
+                T_res = T * (1 - sum_Q / movement.max_saturation) -  self.clearing_time * len(self.phases)
+                green_max = (Q / movement.max_saturation) * T + (1 / len(self.phases)) * T_res
+                priority_list.append((movement, green_max))
+
+
+        while priority_list:
+            priority_list = add_phase_to_queue(priority_list)
+
 
   
     def update_priority_idx(self, time):
@@ -112,13 +127,20 @@ class Analytical_Agent(Agent):
         Updates the priority of the movements of the intersection, the higher priority the more the movement needs to get a green lights
         :param time: the time in the simulation, at this moment only integer values are supported
         """
-        self.update_clear_green_time(time)
-
+        # additional_waiting = 0
+        # for i in range(0, self.clearing_time+1):
+        #     additional_waiting += np.max([self.movements[x].get_green_time(time, self.phase.movements, i) for x in self.phase.movements])
+            
+        # served_phase_green_time = np.max([self.movements[x].green_time for x in self.phase.movements])
+        # served_phase_waiting_time = np.max([self.movements[x].get_green_time(time, []) for x in self.phase.movements])
         for idx, movement in zip(self.movements.keys(), self.movements.values()):
             if idx in self.phase.movements:
-                movement.priority = ((movement.green_time * movement.max_saturation) / (movement.green_time + 2))
+                movement.priority = ((movement.green_time * movement.max_saturation) / (movement.green_time + movement.clearing_time))
             else:
-                movement.priority = ((movement.green_time * movement.max_saturation) / (movement.green_time + 2 + 2))
+                penalty_term = movement.clearing_time
+                # additional_waiting / (served_phase_green_time * movement.max_saturation)
+                movement.priority = ((movement.green_time * movement.max_saturation) /
+                                     (movement.green_time + movement.clearing_time + penalty_term))
         
     def update_clear_green_time(self, time):
         """
@@ -126,24 +148,7 @@ class Analytical_Agent(Agent):
         :param time: the time in the simulation, at this moment only integer values are supported
         """
         for movement in self.movements.values():
-            movement.arr_rate = movement.get_arr_veh_num(0, time) / time
-            dep = movement.get_dep_veh_num(0, time)
-
-            green_time = 0
-            LHS = dep + movement.max_saturation * green_time
-            pass_link_time = movement.pass_time
-            
-            end_time = time + 2 + green_time - pass_link_time
-
-            RHS = movement.arr_rate * end_time
-            
-            while (RHS - LHS) > 0.1 and LHS < RHS:
-                green_time += 1
-
-                LHS = dep + movement.max_saturation * green_time
-                end_time = time + 2 + green_time - pass_link_time
-
-                RHS = movement.arr_rate * end_time
-
+            green_time = movement.get_green_time(time, self.phase.movements)
             movement.green_time = green_time
+
 

@@ -5,8 +5,14 @@ import matplotlib.pyplot as plt
 import torch
 
 class Logger:
-    
+    """
+    The Logger class is responsible for logging data, building representations and saving them in a specified location
+    """
     def __init__(self, args):
+        """
+        Initialises the logger object
+        :param args: the arguments passed by the user
+        """
 
         self.args = args
         
@@ -30,20 +36,28 @@ class Logger:
 
 
     def log_measures(self, environ):
-
+        """
+        Logs measures such as reward, vehicle count, average travel time and q losses, works for learning agents and aggregates over episodes
+        :param environ: the environment in which the model was run
+        """
         self.reward = 0
-        # for agent in environ.agents:
-        #     self.reward += (agent.total_rewards / agent.reward_count)
-        #     agent.total_rewards = 0
-        #     agent.reward_count = 0
+        if environ.agents_type == 'learning':
+            for agent in environ.agents:
+                self.reward += (agent.total_rewards / agent.reward_count)
+                agent.total_rewards = 0
+                agent.reward_count = 0
             
-        # self.plot_rewards.append(self.reward)
+        self.plot_rewards.append(self.reward)
         self.veh_count.append(environ.eng.get_finished_vehicle_count())
         self.travel_time.append(environ.eng.get_average_travel_time())
         self.episode_losses.append(np.mean(self.losses))
         
 
     def save_log_file(self, environ):
+        """
+        Creates and saves a log file with information about the experiment in a .txt format
+        :param environ: the environment in which the model was run
+        """
         log_file = open(self.log_path + "/logs.txt","w+")
 
         log_file.write(str(self.args.sim_config))
@@ -67,15 +81,6 @@ class Logger:
 
         for agent in environ.agents:
             log_file.write(agent.ID + "\n")
-            # for i in range(-1, agent.n_actions):
-            #     log_file.write("phase " + str(i) + " duration: " + str(agent.past_phases.count(i)) + "\n")
-            # log_file.write("\n")
-
-            # for i in range(-1, agent.n_actions):
-            #     log_file.write("phase " + str(i) + " switch: " + str(len(agent.total_duration[i+1])) + "\n")
-            # log_file.write("\n")
-
-            # log_file.write("avg max wait time: " + str(np.mean([x for x in agent.max_waiting_time if x != 0])) + "\n")
             for move in agent.movements.values():
                 log_file.write("movement " + str(move.ID) + " max wait time: " + str(move.max_waiting_time) + "\n")
                 log_file.write("movement " + str(move.ID) + " avg wait time: " + str(np.mean(move.waiting_time_list)) + "\n")
@@ -87,32 +92,37 @@ class Logger:
 
 
 
-    def save_phase_plots(self, environ):
-        for agent in environ.agents:
-            plt.plot(agent.past_phases, '|', linewidth=25)
-            figure = plt.gcf()
-            figure.set_size_inches(20,10)
-            # plt.xticks(np.arange(0, self.args.num_sim_steps+1, step=10))
-            plt.ylabel('phase')
-            plt.xlabel('time')
-            plt.grid()
+    # def save_phase_plots(self, environ):
+    #     for agent in environ.agents:
+    #         plt.plot(agent.past_phases, '|', linewidth=25)
+    #         figure = plt.gcf()
+    #         figure.set_size_inches(20,10)
+    #         # plt.xticks(np.arange(0, self.args.num_sim_steps+1, step=10))
+    #         plt.ylabel('phase')
+    #         plt.xlabel('time')
+    #         plt.grid()
             
-            ax = plt.gcf().get_axes()[0]
-            ax.spines['left'].set_position(('data', 0))
-            ax.spines['bottom'].set_position(('data', 0))
-            ax.spines['top'].set_visible(False)
-            ax.spines['right'].set_visible(False)
+    #         ax = plt.gcf().get_axes()[0]
+    #         ax.spines['left'].set_position(('data', 0))
+    #         ax.spines['bottom'].set_position(('data', 0))
+    #         ax.spines['top'].set_visible(False)
+    #         ax.spines['right'].set_visible(False)
 
-            ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=10), minor=True)
-            ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=100))
-            ax.set_yticks(np.arange(-1, 8, step=1))
-            ax.grid(which='minor', axis='both')
+    #         ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=10), minor=True)
+    #         ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=100))
+    #         ax.set_yticks(np.arange(-1, 8, step=1))
+    #         ax.grid(which='minor', axis='both')
             
-            plt.savefig(self.log_path + '/phase' + str(agent.ID) + '.png', bbox_inches='tight')
-            plt.clf()
+    #         plt.savefig(self.log_path + '/phase' + str(agent.ID) + '.png', bbox_inches='tight')
+    #         plt.clf()
 
 
     def save_measures_plots(self):
+        """
+        Saves plots containing the measures such as vehicle count, travel time, rewards and q losses
+        The data is over the episodes and for now works only with learning agents
+        """
+        
         plt.plot(self.veh_count)
         plt.ylabel('vehicle count')
         plt.xlabel('episodes')
@@ -139,6 +149,10 @@ class Logger:
 
 
     def save_models(self, environ):
+        """
+        Saves machine learning models (for now just neural networks)
+        :param environ: the environment in which the model was run
+        """
         torch.save(environ.local_net.state_dict(), self.log_path + '/policy_net.pt')
         torch.save(environ.target_net.state_dict(), self.log_path + '/target_net.pt')
 

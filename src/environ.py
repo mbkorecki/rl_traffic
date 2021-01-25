@@ -9,9 +9,17 @@ from learning_agent import Learning_Agent
 from analytical_agent import Analytical_Agent
 
 class Environment:
-
-    def __init__(self, args, n_actions=8, n_states=44):
-
+    """
+    The class Environment represents the environment in which the agents operate in this case it is a city
+    consisting of roads, lanes and intersections which are controled by the agents
+    """
+    def __init__(self, args, n_actions=9, n_states=44):
+        """
+        initialises the environment with the arguments parsed from the user input
+        :param args: the arguments input by the user
+        :param n_actions: the number of possible actions for the learning agent, corresponds to the number of available phases
+        :param n_states: the size of the state space for the learning agent
+        """
         self.eng = cityflow.Engine(args.sim_config, thread_num=8)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -34,10 +42,11 @@ class Environment:
 
         self.agents = []
         self.special_agents = []
-        self.num_phases = []
+
+        self.agents_type = args.agents_type
         if args.agents_type == 'analytical':
             self.step = self.analytical_step
-        else:
+        elif args.agents_type == 'learning':
             self.step = self.learning_step
         
         agent_ids = [x for x in self.eng.get_intersection_ids() if not self.eng.is_intersection_virtual(x)]
@@ -47,82 +56,56 @@ class Environment:
             else:
                 new_agent = Learning_Agent(self.eng, ID=agent_id, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
 
-            self.num_phases.append(len(new_agent.phases))
-            non_clearing_phases = [x for x in new_agent.phases.keys() if new_agent.phases[x].movements != []]
-            if len(new_agent.phases) <= 1 and new_agent.ID != '3630249566':
-                new_agent.set_phase(self.eng, list(new_agent.phases.keys())[0])
+
+            if len(new_agent.phases) <= 1:
+                new_agent.set_phase(self.eng, new_agent.phases[0])
             else:
-                if len(new_agent.phases) == 2:
-                    self.special_agents.append(new_agent)
-                else:
-                    self.agents.append(new_agent)
+                self.agents.append(new_agent)
 
-       
-        print(len(self.num_phases))
-        print(np.histogram(self.num_phases, bins = range(max(self.num_phases))))
-
-        print(len(self.agents))
-        print(len(self.special_agents))
         self.action_freq = 10   #typical update freq for agents
-
-    def analytical_step(self, time, done, log_phases):
+        print(len(self.agents))
+        
+    def analytical_step(self, time, done):
+        """
+        represents a single step of the simulation for the analytical agent
+        :param time: the current timestep
+        :param done: flag indicating weather this has been the last step of the episode, used for learning, here for interchangability of the two steps
+        """
         print(time)
         lane_vehs = self.eng.get_lane_vehicles()
-        waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
+        waiting_vehs = None
         
-        for agent in self.special_agents:
-            if time % agent.action_freq == 0:
-                if agent.action_type == "act":
-                    agent.set_phase(self.eng, agent.clearing_phase)
-                    agent.action_freq = time + 5
-                    agent.action_type = "update"
-                else:
-                    phase = [x for x in agent.phases.keys() if agent.phases[x].movements != []][0]
-                    agent.set_phase(self.eng, phase)
-                    agent.action_freq = time + 30
-                    agent.action_type = "act"
-                    
         for agent in self.agents:
+            agent.update_arr_dep_veh_num(lane_vehs)
             if time % agent.action_freq == 0:
                 if agent.action_type == "act":
-                    agent.update_arr_dep_veh_num(lane_vehs)
-                    agent.action, agent.green_time = agent.act(self.eng, time, waiting_vehs)
+                    agent.action, agent.green_time = agent.act(self.eng, time)
+                    
                     if agent.phase.ID != agent.action.ID:
                         agent.set_phase(self.eng, agent.clearing_phase)
-                        agent.action_freq = time + 2
+                        agent.action_freq = time + agent.clearing_time
                         agent.action_type = "update"
-
-                        ###LOGGING DATA###
-                        # if log_phases:
-                        #     agent.total_duration[agent.phase+1].append(agent.phases_duration[agent.phase+1])
-                        #     agent.phases_duration[agent.phase+1] = 0
-                        
+                       
                     else:
-                        # agent.action_freq = time + self.action_freq
                         agent.action_freq = time + agent.green_time
 
 
                 elif agent.action_type == "update":
+                    if waiting_vehs == None: waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
                     agent.update_wait_time(agent.action, agent.green_time, waiting_vehs)
                     agent.set_phase(self.eng, agent.action)
                     agent.action_freq = time + agent.green_time
                     agent.action_type = "act"
-                    
-                    ###LOGGING DATA###
-                    # if log_phases:
-                    #     agent.total_duration[agent.phase+1].append(agent.phases_duration[agent.phase+1])
-                    #     agent.phases_duration[agent.phase+1] = 0
-
-
-            ##### LOGGING DATA ######
-            # if log_phases:
-            #     agent.phases_duration[agent.phase] += 1
-            #     agent.past_phases.append(agent.phase)
 
         self.eng.next_step()
 
         
-    def learning_step(self, time, done, log_phases):
+    def learning_step(self, time, done):
+        """
+        represents a single step of the simulation for the learning agent
+        :param time: the current timestep
+        :param done: flag indicating weather this has been the last step of the episode
+        """
         lanes_count = None
         waiting_vehs = None
 
@@ -134,8 +117,8 @@ class Environment:
                     reward = agent.get_reward(self.eng, time, lanes_count)
                     reward = torch.tensor([reward], dtype=torch.float)
                     agent.reward = reward
-                    # agent.total_rewards += reward
-                    # agent.reward_count += 1
+                    agent.total_rewards += reward
+                    agent.reward_count += 1
                     next_state = torch.FloatTensor(agent.observe(self.eng, time, lanes_count)).unsqueeze(0)
                     self.memory.add(agent.state, agent.action.ID, reward, next_state, done)
                     agent.action_type = "act"
@@ -149,14 +132,8 @@ class Environment:
                     if agent.action != agent.phase:
                         agent.set_phase(self.eng, agent.clearing_phase)
                         agent.action_type = "update"
-                        agent.action_freq = time + 2
+                        agent.action_freq = time + agent.clearing_time
 
-                                                    
-                        ##### LOGGING DATA ######
-                        # if log_phases:
-                        #     agent.total_duration[agent.phase+1].append(agent.phases_duration[agent.phase+1])
-                        #     agent.phases_duration[agent.phase+1] = 0
-                        
                     else:
                         agent.action_type = "reward"
                         agent.action_freq = time + agent.green_time
@@ -167,22 +144,15 @@ class Environment:
                     agent.set_phase(self.eng, agent.action)
                     agent.action_type = "reward"
                     agent.action_freq = time + agent.green_time
-                
-                    ##### LOGGING DATA ######
-                    # if log_phases:
-                    #     agent.total_duration[agent.phase+1].append(agent.phases_duration[agent.phase+1])
-                    #     agent.phases_duration[agent.phase+1] = 0
-                       
 
-            ##### LOGGING DATA ######
-            # if log_phases:
-            #     agent.phases_duration[agent.phase] += 1
-            #     agent.past_phases.append(agent.phase)
 
         if time % self.action_freq == 0: self.eps = max(self.eps-self.eps_decay,self.eps_end)
         self.eng.next_step()
 
     def reset(self):
+        """
+        resets the movements for each agent and the simulation environment, should be called after each episode
+        """
         self.eng.reset(seed=False)
 
         for agent in self.agents:

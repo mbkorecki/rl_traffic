@@ -28,6 +28,15 @@ class Learning_Agent(Agent):
         self.init_phases(eng)
         self.init_phases_vectors(eng)
 
+        self.in_lanes = [x.in_lanes for x in self.movements.values()]
+        self.in_lanes = set([x for sublist in self.in_lanes for x in sublist])
+
+        self.out_lanes = [x.out_lanes for x in self.movements.values()]
+        self.out_lanes = set([x for sublist in self.out_lanes for x in sublist])
+
+        self.total_rewards = 0
+        self.reward_count = 0
+
     def init_phases_vectors(self, eng):
         """
         initialises vector representation of the phases
@@ -70,7 +79,7 @@ class Learning_Agent(Agent):
         :param time: the time of the simulation
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        return -np.abs(np.sum([x.get_pressure(eng, lanes_count) for x in self.movements.values()]))
+        return -np.abs(np.sum([lanes_count[x] for x in self.in_lanes]) - np.sum([lanes_count[x] for x in self.out_lanes]))
 
     def act(self, net_local, state, eps = 0, n_actions=8):
         """

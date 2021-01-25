@@ -1,8 +1,14 @@
 from intersection import Movement, Phase
 
 class Agent:
-    
+    """
+    The base clase of an Agent, Learning and Analytical agents derive from it, basically defines methods used by both types of agents
+    """
     def __init__(self, ID):
+        """
+        initialises the Agent
+        :param ID: the unique ID of the agent corresponding to the ID of the intersection it represents 
+        """
         self.ID = ID
         
         self.movements = {}
@@ -14,6 +20,7 @@ class Agent:
 
         self.action_freq = 10
         self.action_type = "act"
+        self.clearing_time = 5
 
     def init_movements(self, eng):
         """
@@ -33,7 +40,7 @@ class Agent:
             for _, length in eng.get_road_lanes_length(in_road):
                 lane_length = length
                 
-            new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length)
+            new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length, self.clearing_time)
             self.movements.update({roadlink[0] : new_movement})
             
     def init_phases(self, eng):

@@ -1,13 +1,11 @@
 import cityflow
 import numpy as np
 
-
-
 class Movement:
     """
     The class defining a Movement on an intersection, a Movement of vehicles from incoming road -> outgoing road
     """
-    def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, lane_length, phases=[]):
+    def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, lane_length, phases=[], clearing_time=2):
         """
         initialises the Movement, the movement has a type 1, 2 or 3
         1 -> turn right, 2 -> turn left, 3 -> go straight
@@ -29,6 +27,7 @@ class Movement:
 
         self.length = lane_length
         self.phases = phases
+        self.clearing_time = clearing_time
 
         self.arr_vehs_num = []
         self.dep_vehs_num = []
@@ -45,7 +44,7 @@ class Movement:
         self.waiting_time_list = []
 
         self.arr_rate = 0
-        self.green_time = 0
+        self.green_time = 1
         self.priority = 0
 
     def update_wait_time(self, action, green_time, waiting_vehs):
@@ -56,8 +55,7 @@ class Movement:
         :param waiting_vehs: a dictionary with lane ids as keys and number of waiting cars as values
         """
         if self.ID not in action.movements:
-            if [x for x in self.in_lanes if waiting_vehs[x] > 0]:
-                self.waiting_time += green_time + 2
+            self.waiting_time += green_time + self.clearing_time
         else:
             self.waiting_time_list.append(self.waiting_time)
             if  self.waiting_time > self.max_waiting_time:
@@ -70,6 +68,7 @@ class Movement:
         gets the number of vehicles departed from the movement's lanes in a given interval
         :param start_time: the start of the time interval
         :param end_time: the end of the time interval
+        :returns: the number of vehicles departed in the interval
         """
         return np.sum(self.dep_vehs_num[start_time: end_time])
 
@@ -78,6 +77,7 @@ class Movement:
         gets the number of vehicles arrived to the movement's lanes in a given interval
         :param start_time: the start of the time interval
         :param end_time: the end of the time interval
+        :returns: the number of vehicles arrived in the interval
         """
         return np.sum(self.arr_vehs_num[start_time: end_time])
 
@@ -98,17 +98,57 @@ class Movement:
 
         
     def get_pressure(self, eng, lanes_count):
+        """
+        Gets the pressure of the movement, the pressure is defined in traffic RL publications from PenState
+        :param eng: the cityflow simulation engine
+        :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
+        :returns: the pressure of the movement
+        """
         pressure = np.sum([lanes_count[x] for x in self.in_lanes])
-        # SHOULD IT REALLY BE MEAN!?
-        pressure -= int(np.mean([lanes_count[x] for x in self.out_lanes]))
+        pressure -= np.sum([lanes_count[x] for x in self.out_lanes])
         self.pressure = pressure
         return pressure
         
 
     def get_demand(self, eng, lanes_count):
+        """
+        Gets the demand of the incoming lanes of the movement 
+        the demand is the sum of the vehicles on all incoming lanes
+        :param eng: the cityflow simulation engine
+        :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
+        :returns: the demand of the movement
+        """
         demand = int(np.sum([lanes_count[x] for x in self.in_lanes]))
         return demand
 
+    def get_green_time(self, time, current_movements):
+        """
+        Gets the predicted green time needed to clear the movement 
+        :param time: the current timestep
+        :param current_movements: a list of movements that are currently enabled
+        :returns: the predicted green time of the movement
+        """
+        self.arr_rate = self.get_arr_veh_num(0, time) / time
+        dep = self.get_dep_veh_num(0, time)
+
+        green_time = 0
+        LHS = dep + self.max_saturation * green_time
+
+        clearing_time = self.clearing_time
+            
+        end_time = time + clearing_time + green_time - self.pass_time
+        
+        RHS = self.arr_rate * end_time
+            
+        while (RHS - LHS) > 0.1 and LHS < RHS:
+            green_time += 1
+            
+            LHS = dep + self.max_saturation * green_time
+            end_time = time + clearing_time + green_time - self.pass_time
+
+            RHS = self.arr_rate * end_time
+
+        return green_time
     
 class Phase:
     """
