@@ -82,12 +82,15 @@ class Environment:
         """
         print(time)
         lane_vehs = self.eng.get_lane_vehicles()
+        lanes_count = self.eng.get_lane_vehicle_count()
         waiting_vehs = None
         
         for agent in self.agents:
             agent.update_arr_dep_veh_num(lane_vehs)
             if time % agent.action_freq == 0:
                 if agent.action_type == "act":
+                    agent.total_rewards += agent.get_reward(lanes_count)
+                    agent.reward_count += 1
                     agent.action, agent.green_time = agent.act(self.eng, time)
                     
                     if agent.phase.ID != agent.action.ID:
@@ -123,7 +126,7 @@ class Environment:
             agent.update_arr_dep_veh_num(lane_vehs)
             if time % agent.action_freq == 0:
                 if agent.action_type == "reward":
-                    reward = agent.get_reward(self.eng, time, lanes_count)
+                    reward = agent.get_reward(lanes_count)
                     reward = torch.tensor([reward], dtype=torch.float)
                     agent.reward = reward
                     agent.total_rewards += reward
@@ -134,7 +137,7 @@ class Environment:
                                     
                 if agent.action_type == "act":
                     agent.state = np.asarray(agent.observe(self.eng, time, lanes_count))
-                    agent.action = agent.act(self.local_net, agent.state, time, lanes_count, eps=self.eps)
+                    agent.action = agent.act(self.local_net, agent.state, time, eps=self.eps)
                     agent.green_time = 10
                     
                     if agent.action != agent.phase:
@@ -165,10 +168,13 @@ class Environment:
         """
         print(time)
         lanes_count = self.eng.get_lane_vehicle_count()
-        
+        lanes_count = self.eng.get_lane_vehicle_count()
+
         for agent in self.agents:
             if time % agent.action_freq == 0:
                 if agent.action_type == "act":
+                    agent.total_rewards += agent.get_reward(lanes_count)
+                    agent.reward_count += 1
                     agent.action = agent.act(lanes_count)
                     agent.green_time = 10
                     
@@ -189,9 +195,12 @@ class Environment:
         
     def reset(self):
         """
-        resets the movements for each agent and the simulation environment, should be called after each episode
+        resets the movements amd rewards for each agent and the simulation environment, should be called after each episode
         """
         self.eng.reset(seed=False)
 
         for agent in self.agents:
             agent.reset_movements()
+            agent.total_rewards = 0
+            agent.reward_count = 0
+

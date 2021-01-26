@@ -5,10 +5,8 @@ from agent import Agent
 class Demand_Agent(Agent):
 
     def __init__(self, eng, ID=''):
-        super().__init__(ID)
+        super().__init__(eng, ID)
 
-        self.init_movements(eng)
-        self.init_phases(eng)
 
     def act(self, lanes_count):
         phases_priority = {}

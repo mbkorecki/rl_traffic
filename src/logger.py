@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import torch
+import random
+import pickle
 
 class Logger:
     """
@@ -24,7 +26,7 @@ class Logger:
 
         self.reward = 0
         
-        self.log_path = "../results" + args.sim_config.split('/')[1] + '-' + str(args.num_episodes) + '-' + str(args.update_freq)
+        self.log_path = "../results" + args.sim_config.split('/')[2] + '-' + str(args.num_episodes) + '-' + str(args.update_freq)
         old_path = self.log_path
         i = 1
 
@@ -41,18 +43,44 @@ class Logger:
         :param environ: the environment in which the model was run
         """
         self.reward = 0
-        if environ.agents_type == 'learning':
-            for agent in environ.agents:
-                self.reward += (agent.total_rewards / agent.reward_count)
-                agent.total_rewards = 0
-                agent.reward_count = 0
-            
+        for agent in environ.agents:
+            self.reward += (agent.total_rewards / agent.reward_count)
+
         self.plot_rewards.append(self.reward)
         self.veh_count.append(environ.eng.get_finished_vehicle_count())
         self.travel_time.append(environ.eng.get_average_travel_time())
         self.episode_losses.append(np.mean(self.losses))
         
+    def serialise_data(self, environ):
+        """
+        Serialises the waiting times data and rewards for the agents as dictionaries with agent ID as a key
+        """
+        waiting_time_dict = {}
+        reward_dict = {}
+        
+        for agent in environ.agents:
+            waiting_time_dict.update({agent.ID : {}})
+            reward_dict.update({agent.ID : agent.total_rewards / agent.reward_count})
+            for move in agent.movements.values():
+                waiting_time_dict[agent.ID].update({move.ID : (move.max_waiting_time, move.waiting_time_list)})
 
+        with open(self.log_path + "/" + "waiting_time.pickle", "wb") as f:
+            pickle.dump(waiting_time_dict, f)
+            
+        with open(self.log_path + "/" + "agents_rewards.pickle", "wb") as f:
+            pickle.dump(reward_dict, f) 
+
+
+        if environ.agents_type == 'learning':
+            with open(self.log_path + "/" + "episode_rewards.pickle", "wb") as f:
+                pickle.dump(self.plot_rewards, f)
+
+            with open(self.log_path + "/" + "episode_veh_count.pickle", "wb") as f:
+                pickle.dump(self.veh_count, f)
+
+            with open(self.log_path + "/" + "episode_travel_time.pickle", "wb") as f:
+                pickle.dump(self.travel_time, f)
+            
     def save_log_file(self, environ):
         """
         Creates and saves a log file with information about the experiment in a .txt format
@@ -83,6 +111,7 @@ class Logger:
             log_file.write(agent.ID + "\n")
             for move in agent.movements.values():
                 log_file.write("movement " + str(move.ID) + " max wait time: " + str(move.max_waiting_time) + "\n")
+                if not move.waiting_time_list: move.waiting_time_list = [0]
                 log_file.write("movement " + str(move.ID) + " avg wait time: " + str(np.mean(move.waiting_time_list)) + "\n")
             log_file.write("\n")
     
@@ -90,31 +119,29 @@ class Logger:
         
         log_file.close()
 
-
-
-    # def save_phase_plots(self, environ):
-    #     for agent in environ.agents:
-    #         plt.plot(agent.past_phases, '|', linewidth=25)
-    #         figure = plt.gcf()
-    #         figure.set_size_inches(20,10)
-    #         # plt.xticks(np.arange(0, self.args.num_sim_steps+1, step=10))
-    #         plt.ylabel('phase')
-    #         plt.xlabel('time')
-    #         plt.grid()
+    def save_phase_plots(self, environ):
+        for agent in random.sample(environ.agents, 5):
+            plt.plot(agent.past_phases, '|', linewidth=25)
+            figure = plt.gcf()
+            figure.set_size_inches(20,10)
+            # plt.xticks(np.arange(0, self.args.num_sim_steps+1, step=10))
+            plt.ylabel('phase')
+            plt.xlabel('time')
+            plt.grid()
             
-    #         ax = plt.gcf().get_axes()[0]
-    #         ax.spines['left'].set_position(('data', 0))
-    #         ax.spines['bottom'].set_position(('data', 0))
-    #         ax.spines['top'].set_visible(False)
-    #         ax.spines['right'].set_visible(False)
+            ax = plt.gcf().get_axes()[0]
+            ax.spines['left'].set_position(('data', 0))
+            ax.spines['bottom'].set_position(('data', 0))
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
 
-    #         ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=10), minor=True)
-    #         ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=100))
-    #         ax.set_yticks(np.arange(-1, 8, step=1))
-    #         ax.grid(which='minor', axis='both')
+            ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=10), minor=True)
+            ax.set_xticks(np.arange(0, self.args.num_sim_steps+1, step=100))
+            ax.set_yticks(np.arange(-1, 8, step=1))
+            ax.grid(which='minor', axis='both')
             
-    #         plt.savefig(self.log_path + '/phase' + str(agent.ID) + '.png', bbox_inches='tight')
-    #         plt.clf()
+            plt.savefig(self.log_path + '/phase' + str(agent.ID) + '.png', bbox_inches='tight')
+            plt.clf()
 
 
     def save_measures_plots(self):

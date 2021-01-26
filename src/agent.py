@@ -1,10 +1,11 @@
 from intersection import Movement, Phase
+import numpy as np
 
 class Agent:
     """
     The base clase of an Agent, Learning and Analytical agents derive from it, basically defines methods used by both types of agents
     """
-    def __init__(self, ID):
+    def __init__(self, eng, ID):
         """
         initialises the Agent
         :param ID: the unique ID of the agent corresponding to the ID of the intersection it represents 
@@ -15,12 +16,26 @@ class Agent:
         self.phases = {}
         self.clearing_phase = None
 
+        self.total_rewards = 0
+        self.reward_count = 0
+        
         self.action = 0
         self.phase = Phase(ID="")
 
         self.action_freq = 10
         self.action_type = "act"
         self.clearing_time = 5
+
+        
+        self.init_movements(eng)
+        self.init_phases(eng)
+
+        self.in_lanes = [x.in_lanes for x in self.movements.values()]
+        self.in_lanes = set([x for sublist in self.in_lanes for x in sublist])
+
+        self.out_lanes = [x.out_lanes for x in self.movements.values()]
+        self.out_lanes = set([x for sublist in self.out_lanes for x in sublist])
+
 
     def init_movements(self, eng):
         """
@@ -94,7 +109,15 @@ class Agent:
         """
         eng.set_tl_phase(self.ID, phase.ID)
         self.phase = phase
-                    
+
+    def get_reward(self, lanes_count):
+        """
+        gets the reward of the agent in the form of pressure
+        :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
+        """
+        return -np.abs(np.sum([lanes_count[x] for x in self.in_lanes]) - np.sum([lanes_count[x] for x in self.out_lanes]))
+
+        
     def update_arr_dep_veh_num(self, lanes_vehs):
         """
         Updates the list containing the number vehicles that arrived and departed

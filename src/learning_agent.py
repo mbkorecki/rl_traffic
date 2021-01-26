@@ -19,23 +19,12 @@ class Learning_Agent(Agent):
         :param ID: the unique ID of the agent corresponding to the ID of the intersection it represents 
         :param eng: the cityflow simulation engine
         """
-        super().__init__(ID)
+        super().__init__(eng, ID)
 
         self.in_roads = in_roads
         self.out_roads = out_roads
 
-        self.init_movements(eng)
-        self.init_phases(eng)
         self.init_phases_vectors(eng)
-
-        self.in_lanes = [x.in_lanes for x in self.movements.values()]
-        self.in_lanes = set([x for sublist in self.in_lanes for x in sublist])
-
-        self.out_lanes = [x.out_lanes for x in self.movements.values()]
-        self.out_lanes = set([x for sublist in self.out_lanes for x in sublist])
-
-        self.total_rewards = 0
-        self.reward_count = 0
 
     def init_phases_vectors(self, eng):
         """
@@ -61,15 +50,6 @@ class Learning_Agent(Agent):
         """
         observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lanes_count) + self.get_out_lanes_veh_num(eng, lanes_count)
         return observations
-
-    def get_reward(self, eng, time, lanes_count):
-        """
-        gets the reward of the agent in the form of pressure
-        :param eng: the cityflow simulation engine
-        :param time: the time of the simulation
-        :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
-        """
-        return -np.abs(np.sum([lanes_count[x] for x in self.in_lanes]) - np.sum([lanes_count[x] for x in self.out_lanes]))
 
     def act(self, net_local, state, time, eps = 0, n_actions=8):
         """

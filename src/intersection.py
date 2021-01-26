@@ -56,7 +56,7 @@ class Movement:
         """
         if self.ID not in action.movements:
             self.waiting_time += green_time + self.clearing_time
-        else:
+        elif self.waiting_time > 0:
             self.waiting_time_list.append(self.waiting_time)
             if  self.waiting_time > self.max_waiting_time:
                 self.max_waiting_time = self.waiting_time

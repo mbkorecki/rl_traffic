@@ -18,12 +18,10 @@ class Analytical_Agent(Agent):
         :param ID: the unique ID of the agent corresponding to the ID of the intersection it represents 
         :param eng: the cityflow simulation engine
         """
-        super().__init__(ID)
+        super().__init__(eng, ID)
 
         self.action_queue = queue.Queue()
 
-        self.init_movements(eng)
-        self.init_phases(eng)
 
     def act(self, eng, time):
         """
