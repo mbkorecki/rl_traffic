@@ -1,0 +1,426 @@
+../ny16/1.config
+1
+1800
+10
+64
+0.0005
+mean vehicle count: 2463.0 with sd: 0.0
+mean travel time: 275.4212853773585 with sd: 0.0
+
+intersection_1_1
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_2
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_3
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_4
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_5
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_6
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_7
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_8
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_9
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_10
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_11
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_12
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_13
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_14
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_15
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+intersection_1_16
+movement 0 max wait time: 0
+movement 0 avg wait time: nan
+movement 1 max wait time: 0
+movement 1 avg wait time: nan
+movement 2 max wait time: 0
+movement 2 avg wait time: nan
+movement 3 max wait time: 0
+movement 3 avg wait time: nan
+movement 4 max wait time: 0
+movement 4 avg wait time: nan
+movement 5 max wait time: 0
+movement 5 avg wait time: nan
+movement 6 max wait time: 0
+movement 6 avg wait time: nan
+movement 7 max wait time: 0
+movement 7 avg wait time: nan
+movement 8 max wait time: 0
+movement 8 avg wait time: nan
+movement 9 max wait time: 0
+movement 9 avg wait time: nan
+movement 10 max wait time: 0
+movement 10 avg wait time: nan
+movement 11 max wait time: 0
+movement 11 avg wait time: nan
+
+

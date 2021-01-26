@@ -97,10 +97,9 @@ class Movement:
         self.prev_vehs = current_vehs
 
         
-    def get_pressure(self, eng, lanes_count):
+    def get_pressure(self, lanes_count):
         """
         Gets the pressure of the movement, the pressure is defined in traffic RL publications from PenState
-        :param eng: the cityflow simulation engine
         :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
         :returns: the pressure of the movement
         """
@@ -110,11 +109,10 @@ class Movement:
         return pressure
         
 
-    def get_demand(self, eng, lanes_count):
+    def get_demand(self, lanes_count):
         """
         Gets the demand of the incoming lanes of the movement 
         the demand is the sum of the vehicles on all incoming lanes
-        :param eng: the cityflow simulation engine
         :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
         :returns: the demand of the movement
         """

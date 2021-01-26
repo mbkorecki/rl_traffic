@@ -2,7 +2,7 @@ import cityflow
 import torch
 import numpy as np
 import random
-from operator import add
+import operator
 
 from intersection import Movement, Phase
 from agent import Agent
@@ -51,16 +51,6 @@ class Learning_Agent(Agent):
                 vec[idx-1] = 1
             phase.vector = vec.tolist()
             idx+=1    
-
-    def set_phase(self, eng, phase):
-        """
-        sets the phase of the agent to the indicated phase
-        :param eng: the cityflow simulation engine
-        :param phase: the phase object, its ID corresponds to the phase ID in the simulation envirionment 
-        """
-        eng.set_tl_phase(self.ID, phase.ID)
-        self.phase = phase
-
     
     def observe(self, eng, time, lanes_count):
         """
@@ -81,14 +71,14 @@ class Learning_Agent(Agent):
         """
         return -np.abs(np.sum([lanes_count[x] for x in self.in_lanes]) - np.sum([lanes_count[x] for x in self.out_lanes]))
 
-    def act(self, net_local, state, eps = 0, n_actions=8):
+    def act(self, net_local, state, time, eps = 0, n_actions=8):
         """
         generates the action to be taken by the agent
         :param net_local: the neural network used in the decision making process
         :param state: the current state of the intersection, given by observe
         :param eps: the epsilon value used in the epsilon greedy learing
         :param n_actions: number of actions to choose from
-        """
+        """          
         if random.random() > eps:
             state = torch.from_numpy(state).float().unsqueeze(0).to(device)
             net_local.eval()
@@ -97,7 +87,24 @@ class Learning_Agent(Agent):
             net_local.train()
             return self.phases[np.argmax(action_values.cpu().data.numpy())]
         else:
-            return self.phases[random.choice(np.arange(n_actions))]
+            if random.random() > eps:
+                self.update_clear_green_time(time)
+                self.update_priority_idx(time)
+
+                phases_priority = {}
+                for phase in self.phases.values():
+                    movements = [x for x in phase.movements if x not in self.clearing_phase.movements]
+                    phase_prioirty = 0
+                    for moveID in movements:
+                        phase_prioirty += self.movements[moveID].priority
+
+                    phases_priority.update({phase.ID : phase_prioirty})
+
+                action = self.phases[max(phases_priority.items(), key=operator.itemgetter(1))[0]]
+                return action
+            else:
+                return self.phases[random.choice(np.arange(n_actions))]
+    
     
     def get_out_lanes_veh_num(self, eng, lanes_count):
         """
@@ -124,3 +131,4 @@ class Learning_Agent(Agent):
             for lane in lanes:
                 lanes_veh_num.append(lanes_count[lane])
         return lanes_veh_num
+

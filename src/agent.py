@@ -85,6 +85,16 @@ class Agent:
                 if phase.ID not in self.movements[move].phases:
                     self.movements[move].phases.append(phase.ID)
 
+
+    def set_phase(self, eng, phase):
+        """
+        sets the phase of the agent to the indicated phase
+        :param eng: the cityflow simulation engine
+        :param phase: the phase object, its ID corresponds to the phase ID in the simulation envirionment 
+        """
+        eng.set_tl_phase(self.ID, phase.ID)
+        self.phase = phase
+                    
     def update_arr_dep_veh_num(self, lanes_vehs):
         """
         Updates the list containing the number vehicles that arrived and departed
@@ -117,3 +127,26 @@ class Agent:
             move.waiting_time = 0
             move.max_waiting_time = 0
             move.waiting_time_list = []
+
+            
+    def update_priority_idx(self, time):
+        """
+        Updates the priority of the movements of the intersection, the higher priority the more the movement needs to get a green lights
+        :param time: the time in the simulation, at this moment only integer values are supported
+        """
+        for idx, movement in zip(self.movements.keys(), self.movements.values()):
+            if idx in self.phase.movements:
+                movement.priority = ((movement.green_time * movement.max_saturation) / (movement.green_time + movement.clearing_time))
+            else:
+                penalty_term = movement.clearing_time
+                movement.priority = ((movement.green_time * movement.max_saturation) /
+                                     (movement.green_time + movement.clearing_time + penalty_term))
+        
+    def update_clear_green_time(self, time):
+        """
+        Updates the green times of the movements of the intersection
+        :param time: the time in the simulation, at this moment only integer values are supported
+        """
+        for movement in self.movements.values():
+            green_time = movement.get_green_time(time, self.phase.movements)
+            movement.green_time = green_time
