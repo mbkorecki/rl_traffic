@@ -63,7 +63,7 @@ for i_episode in range(num_episodes):
     logger.losses = []
     if i_episode == num_episodes-1:
         environ.eng.set_save_replay(open=True)
-        environ.eng.set_replay_file(logger.log_path + "/replayFile.txt")
+        environ.eng.set_replay_file(logger.log_path.split('/')[0] + "/../" + logger.log_path.split('/')[1] + "/replay_file.txt")
     
     print("episode ", i_episode)
     done = False
@@ -78,7 +78,7 @@ for i_episode in range(num_episodes):
         t += 1
       
         step = (step+1) % environ.update_freq
-        if environ.agents_type == 'kearning' and step == 0:
+        if (environ.agents_type == 'learning' or environ.agents_type == 'hybrid') and step == 0:
             if len(environ.memory)>environ.batch_size:
                 experience = environ.memory.sample()
                 logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))
@@ -90,6 +90,6 @@ for i_episode in range(num_episodes):
 logger.save_log_file(environ)
 logger.serialise_data(environ)
 
-if environ.agents_type == 'learning':
+if environ.agents_type == 'learning' or environ.agents_type == 'hybrid':
     logger.save_measures_plots()
     logger.save_models(environ)

@@ -25,6 +25,7 @@ class Learning_Agent(Agent):
         self.out_roads = out_roads
 
         self.init_phases_vectors(eng)
+        self.n_actions = len(self.phases)
 
     def init_phases_vectors(self, eng):
         """
@@ -51,14 +52,13 @@ class Learning_Agent(Agent):
         observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lanes_count) + self.get_out_lanes_veh_num(eng, lanes_count)
         return observations
 
-    def act(self, net_local, state, time, eps = 0, n_actions=8):
+    def act(self, net_local, state, time, eps = 0):
         """
         generates the action to be taken by the agent
         :param net_local: the neural network used in the decision making process
         :param state: the current state of the intersection, given by observe
         :param eps: the epsilon value used in the epsilon greedy learing
-        :param n_actions: number of actions to choose from
-        """          
+        """
         if random.random() > eps:
             state = torch.from_numpy(state).float().unsqueeze(0).to(device)
             net_local.eval()
@@ -67,23 +67,7 @@ class Learning_Agent(Agent):
             net_local.train()
             return self.phases[np.argmax(action_values.cpu().data.numpy())]
         else:
-            if random.random() > eps:
-                self.update_clear_green_time(time)
-                self.update_priority_idx(time)
-
-                phases_priority = {}
-                for phase in self.phases.values():
-                    movements = [x for x in phase.movements if x not in self.clearing_phase.movements]
-                    phase_prioirty = 0
-                    for moveID in movements:
-                        phase_prioirty += self.movements[moveID].priority
-
-                    phases_priority.update({phase.ID : phase_prioirty})
-
-                action = self.phases[max(phases_priority.items(), key=operator.itemgetter(1))[0]]
-                return action
-            else:
-                return self.phases[random.choice(np.arange(n_actions))]
+            return self.phases[random.choice(np.arange(self.n_actions))]
     
     
     def get_out_lanes_veh_num(self, eng, lanes_count):

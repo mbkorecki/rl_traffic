@@ -5,7 +5,7 @@ class Movement:
     """
     The class defining a Movement on an intersection, a Movement of vehicles from incoming road -> outgoing road
     """
-    def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, lane_length, phases=[], clearing_time=2):
+    def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, lane_length, clearing_time=2, phases=[]):
         """
         initialises the Movement, the movement has a type 1, 2 or 3
         1 -> turn right, 2 -> turn left, 3 -> go straight
@@ -46,22 +46,26 @@ class Movement:
         self.arr_rate = 0
         self.green_time = 1
         self.priority = 0
+        self.last_on_time = -1
 
-    def update_wait_time(self, action, green_time, waiting_vehs):
+    def update_wait_time(self, time, action, phase):
         """
         Updates movement's waiting time - the time a given movement has waited to be enabled
         :param action: the phase to be chosen by the intersection
         :param green_time: the green time the action is going to be enabled for
         :param waiting_vehs: a dictionary with lane ids as keys and number of waiting cars as values
         """
-        if self.ID not in action.movements:
-            self.waiting_time += green_time + self.clearing_time
-        elif self.waiting_time > 0:
-            self.waiting_time_list.append(self.waiting_time)
+        if self.ID not in action.movements and self.ID in phase.movements:
+            self.last_on_time = time            
+        elif self.ID in action.movements and self.ID not in phase.movements:
+            if self.last_on_time == -1:
+                self.waiting_time = 0
+            else:
+                self.waiting_time = time - self.last_on_time
+                self.waiting_time_list.append(self.waiting_time)
             if  self.waiting_time > self.max_waiting_time:
                 self.max_waiting_time = self.waiting_time
-            self.waiting_time = 0
-
+            self.last_on_time = -1
 
     def get_dep_veh_num(self, start_time, end_time):
         """

@@ -26,7 +26,6 @@ class Agent:
         self.action_type = "act"
         self.clearing_time = 5
 
-        
         self.init_movements(eng)
         self.init_phases(eng)
 
@@ -55,7 +54,7 @@ class Agent:
             for _, length in eng.get_road_lanes_length(in_road):
                 lane_length = length
                 
-            new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length, self.clearing_time)
+            new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length, clearing_time=self.clearing_time)
             self.movements.update({roadlink[0] : new_movement})
             
     def init_phases(self, eng):
@@ -127,7 +126,7 @@ class Agent:
             movement.update_arr_dep_veh_num(lanes_vehs)
 
             
-    def update_wait_time(self, action, green_time, waiting_vehs):
+    def update_wait_time(self, time, action, phase):
         """
         Updates movements' waiting time - the time a given movement has waited to be enabled
         :param action: the phase to be chosen by the intersection
@@ -135,7 +134,7 @@ class Agent:
         :param waiting_vehs: a dictionary with lane ids as keys and number of waiting cars as values
         """
         for movement in self.movements.values():
-            movement.update_wait_time(action, green_time, waiting_vehs)
+            movement.update_wait_time(time, action, phase)
             
     def reset_movements(self):
         """

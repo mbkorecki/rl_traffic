@@ -8,6 +8,7 @@ from dqn import DQN, ReplayMemory, optimize_model
 from learning_agent import Learning_Agent
 from analytical_agent import Analytical_Agent
 from demand_agent import Demand_Agent
+from hybrid_agent import Hybrid_Agent
 
 class Environment:
     """
@@ -42,28 +43,29 @@ class Environment:
         self.memory = ReplayMemory(self.n_actions, batch_size=args.batch_size)
 
         self.agents = []
-        self.special_agents = []
 
         self.agents_type = args.agents_type
-        if args.agents_type == 'analytical':
+        if self.agents_type == 'analytical':
             self.step = self.analytical_step
-        elif args.agents_type == 'learning':
+        elif self.agents_type == 'learning' or  args.agents_type == 'hybrid':
             self.step = self.learning_step
-        elif args.agents_type == 'demand':
+        elif self.agents_type == 'demand':
             self.step = self.demand_step
         else:
-            raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/learning/demand")  
+            raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/learning/demand/hybrid")  
         
         agent_ids = [x for x in self.eng.get_intersection_ids() if not self.eng.is_intersection_virtual(x)]
         for agent_id in agent_ids:
-            if args.agents_type == 'analytical':
+            if self.agents_type == 'analytical':
                 new_agent = Analytical_Agent(self.eng, ID=agent_id)
-            elif args.agents_type == 'learning':
+            elif self.agents_type == 'learning':
                 new_agent = Learning_Agent(self.eng, ID=agent_id, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
-            elif args.agents_type == 'demand':
+            elif self.agents_type == 'demand':
                 new_agent = Demand_Agent(self.eng, ID=agent_id)
+            elif self.agents_type == 'hybrid':
+                new_agent = Hybrid_Agent(self.eng, ID=agent_id, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id)) 
             else:
-                raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/learning/demand")  
+                raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/learning/demand/hybrid")  
 
 
             if len(new_agent.phases) <= 1:
@@ -92,8 +94,10 @@ class Environment:
                     agent.total_rewards += agent.get_reward(lanes_count)
                     agent.reward_count += 1
                     agent.action, agent.green_time = agent.act(self.eng, time)
+               
                     
                     if agent.phase.ID != agent.action.ID:
+                        agent.update_wait_time(time, agent.action, agent.phase)
                         agent.set_phase(self.eng, agent.clearing_phase)
                         agent.action_freq = time + agent.clearing_time
                         agent.action_type = "update"
@@ -103,8 +107,6 @@ class Environment:
 
 
                 elif agent.action_type == "update":
-                    if waiting_vehs == None: waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
-                    agent.update_wait_time(agent.action, agent.green_time, waiting_vehs)
                     agent.set_phase(self.eng, agent.action)
                     agent.action_freq = time + agent.green_time
                     agent.action_type = "act"
@@ -123,7 +125,8 @@ class Environment:
         waiting_vehs = None
 
         for agent in self.agents:
-            agent.update_arr_dep_veh_num(lane_vehs)
+            if self.agents_type == "hybrid":
+                agent.update_arr_dep_veh_num(lane_vehs)
             if time % agent.action_freq == 0:
                 if agent.action_type == "reward":
                     reward = agent.get_reward(lanes_count)
@@ -139,6 +142,8 @@ class Environment:
                     agent.state = np.asarray(agent.observe(self.eng, time, lanes_count))
                     agent.action = agent.act(self.local_net, agent.state, time, eps=self.eps)
                     agent.green_time = 10
+                    if waiting_vehs == None: waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
+                    agent.update_wait_time(agent.action, agent.green_time, waiting_vehs)
                     
                     if agent.action != agent.phase:
                         agent.set_phase(self.eng, agent.clearing_phase)
@@ -150,8 +155,6 @@ class Environment:
                         agent.action_freq = time + agent.green_time
                                                                 
                 elif agent.action_type == "update":
-                    if waiting_vehs == None: waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
-                    agent.update_wait_time(agent.action, agent.green_time, waiting_vehs)
                     agent.set_phase(self.eng, agent.action)
                     agent.action_type = "reward"
                     agent.action_freq = time + agent.green_time
@@ -177,6 +180,8 @@ class Environment:
                     agent.reward_count += 1
                     agent.action = agent.act(lanes_count)
                     agent.green_time = 10
+                    if waiting_vehs == None: waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
+                    agent.update_wait_time(agent.action, agent.green_time, waiting_vehs)
                     
                     if agent.phase.ID != agent.action.ID:
                         agent.set_phase(self.eng, agent.clearing_phase)

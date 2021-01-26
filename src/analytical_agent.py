@@ -32,8 +32,8 @@ class Analytical_Agent(Agent):
         """
 
         self.update_clear_green_time(time)
+        
         self.stabilise(time)
-
         if not self.action_queue.empty():
             phase, green_time = self.action_queue.get()
             return phase, int(np.ceil(green_time))
@@ -92,19 +92,22 @@ class Analytical_Agent(Agent):
         
         priority_list = []
 
-        for movement in [x for x in self.movements.values() if x not in self.phase.movements]:                
+        for movement in [x for x in self.movements.values() if x.ID not in self.phase.movements]:              
             Q = movement.arr_rate
-            z = movement.green_time + movement.clearing_time + movement.waiting_time
-
+            if movement.last_on_time == -1:
+                waiting_time = 0
+            else:
+                waiting_time = time - movement.last_on_time
+                
+            z = movement.green_time + movement.clearing_time + waiting_time
             n_crit = Q * T * ((T_max - z) / (T_max - T))
 
             waiting = movement.green_time * movement.max_saturation
             if waiting > n_crit:
-                T_res = T * (1 - sum_Q / movement.max_saturation) -  self.clearing_time * len(self.phases)
-                green_max = (Q / movement.max_saturation) * T + (1 / len(self.phases)) * T_res
+                T_res = T * (1 - sum_Q / movement.max_saturation) - self.clearing_time * len(self.movements)
+                green_max = (Q / movement.max_saturation) * T + (1 / len(self.movements)) * T_res
                 priority_list.append((movement, green_max))
 
 
-        while priority_list:
-            priority_list = add_phase_to_queue(priority_list)
-
+        priority_list = add_phase_to_queue(priority_list)
+        
