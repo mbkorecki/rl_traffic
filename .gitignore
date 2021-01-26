@@ -6,7 +6,8 @@ replayFile.txt
 __pycache__/
 *.py[cod]
 *$py.class
-results*/
+results*
+
 # C extensions
 *.so
 
