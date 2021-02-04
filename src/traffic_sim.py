@@ -29,7 +29,7 @@ def parse_args():
                         help="the number of episodes to run (one episosde consists of a full simulation run for num_sim_steps)"
                         )
     parser.add_argument("--num_sim_steps", default=1800, type=int, help="the number of simulation steps, one step corresponds to 1 second")
-    parser.add_argument("--agents_type", default='analytical', type=str, help="the type of agents learning/analytical")
+    parser.add_argument("--agents_type", default='analytical', type=str, help="the type of agents learning/analytical/hybrid/demand")
 
     parser.add_argument("--update_freq", default=10, type=int,
                         help="the frequency of the updates (training pass) of the deep-q-network, default=10")
@@ -47,7 +47,7 @@ args = parse_args()
 # print(eng.get_average_travel_time(), eng.get_finished_vehicle_count())
 
 logger = Logger(args)
-environ = Environment(args, n_actions=9, n_states=33)
+environ = Environment(args, n_actions=9, n_states=57)
 
 num_episodes = args.num_episodes
 num_sim_steps = args.num_sim_steps

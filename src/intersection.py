@@ -46,22 +46,22 @@ class Movement:
         self.arr_rate = 0
         self.green_time = 1
         self.priority = 0
-        self.last_on_time = -1
+        self.last_on_time = 0
 
     def update_wait_time(self, time, action, phase):
         """
         Updates movement's waiting time - the time a given movement has waited to be enabled
-        :param action: the phase to be chosen by the intersection
-        :param green_time: the green time the action is going to be enabled for
-        :param waiting_vehs: a dictionary with lane ids as keys and number of waiting cars as values
+        :parama time: the current time
+        :param action: the phase to be chosen for the intersection in this time step
+        :param phase: the phase at the intersection up till this time step
         """
         if self.ID not in action.movements and self.ID in phase.movements:
-            self.last_on_time = time            
+            self.last_on_time = time           
         elif self.ID in action.movements and self.ID not in phase.movements:
             if self.last_on_time == -1:
                 self.waiting_time = 0
             else:
-                self.waiting_time = time - self.last_on_time
+                self.waiting_time = time + 2 - self.last_on_time
                 self.waiting_time_list.append(self.waiting_time)
             if  self.waiting_time > self.max_waiting_time:
                 self.max_waiting_time = self.waiting_time
@@ -130,6 +130,7 @@ class Movement:
         :param current_movements: a list of movements that are currently enabled
         :returns: the predicted green time of the movement
         """
+        
         self.arr_rate = self.get_arr_veh_num(0, time) / time
         dep = self.get_dep_veh_num(0, time)
 

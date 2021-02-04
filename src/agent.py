@@ -24,14 +24,14 @@ class Agent:
 
         self.action_freq = 10
         self.action_type = "act"
-        self.clearing_time = 5
+        self.clearing_time = 2
 
         self.init_movements(eng)
         self.init_phases(eng)
 
         self.in_lanes = [x.in_lanes for x in self.movements.values()]
         self.in_lanes = set([x for sublist in self.in_lanes for x in sublist])
-
+        
         self.out_lanes = [x.out_lanes for x in self.movements.values()]
         self.out_lanes = set([x for sublist in self.out_lanes for x in sublist])
 
@@ -44,6 +44,8 @@ class Agent:
         (in_lanes, out_lanes) as the second element
         :param eng: the cityflow simulation engine
         """
+        self.in_lanes_length = {}
+        self.out_lanes_length = {}
         for idx, roadlink in enumerate(eng.get_intersection_lane_links(self.ID)):
             lanes = roadlink[1][:]
             in_road = roadlink[0][0]
@@ -51,8 +53,12 @@ class Agent:
             in_lanes = tuple(set([x[0] for x in lanes]))
             out_lanes = [x[1] for x in lanes]
 
-            for _, length in eng.get_road_lanes_length(in_road):
+            for lane, length in eng.get_road_lanes_length(in_road):
                 lane_length = length
+                self.in_lanes_length.update({lane : length})
+                
+            for lane, length in eng.get_road_lanes_length(out_road):
+                self.out_lanes_length.update({lane : length})
                 
             new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length, clearing_time=self.clearing_time)
             self.movements.update({roadlink[0] : new_movement})
@@ -114,7 +120,8 @@ class Agent:
         gets the reward of the agent in the form of pressure
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        return -np.abs(np.sum([lanes_count[x] for x in self.in_lanes]) - np.sum([lanes_count[x] for x in self.out_lanes]))
+        return -np.abs(np.sum([lanes_count[x] / int(self.in_lanes_length[x]/5) for x in self.in_lanes])
+                       -np.sum([lanes_count[x] / int(self.out_lanes_length[x]/5) for x in self.out_lanes]))
 
         
     def update_arr_dep_veh_num(self, lanes_vehs):
@@ -125,13 +132,13 @@ class Agent:
         for movement in self.movements.values():
             movement.update_arr_dep_veh_num(lanes_vehs)
 
-            
+
     def update_wait_time(self, time, action, phase):
         """
         Updates movements' waiting time - the time a given movement has waited to be enabled
-        :param action: the phase to be chosen by the intersection
-        :param green_time: the green time the action is going to be enabled for
-        :param waiting_vehs: a dictionary with lane ids as keys and number of waiting cars as values
+        :parama time: the current time
+        :param action: the phase to be chosen for the intersection in this time step
+        :param phase: the phase at the intersection up till this time step
         """
         for movement in self.movements.values():
             movement.update_wait_time(time, action, phase)
@@ -146,9 +153,11 @@ class Agent:
             move.prev_vehs = set()
             move.arr_vehs_num = []
             move.dep_vehs_num = []
+            move.last_on_time = 0
             move.waiting_time = 0
             move.max_waiting_time = 0
             move.waiting_time_list = []
+            move.arr_rate = 0
 
             
     def update_priority_idx(self, time):

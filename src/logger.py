@@ -71,7 +71,7 @@ class Logger:
             pickle.dump(reward_dict, f) 
 
 
-        if environ.agents_type == 'learning':
+        if environ.agents_type == 'learning' or environ.agents_type == 'hybrid':
             with open(self.log_path + "/" + "episode_rewards.pickle", "wb") as f:
                 pickle.dump(self.plot_rewards, f)
 

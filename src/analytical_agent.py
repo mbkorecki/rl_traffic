@@ -77,7 +77,11 @@ class Analytical_Agent(Agent):
                         phases_score.update({phaseID : phases_score[phaseID] + 1})
                     else:
                         phases_score.update({phaseID : 1})
-                    phases_time.update({phaseID : elem[1]})
+
+                    if phaseID in phases_time.keys():
+                        phases_time.update({phaseID : max(phases_time[phaseID], elem[1])})
+                    else:
+                        phases_time.update({phaseID : elem[1]})
 
             if [x for x in phases_score.keys() if phases_score[x] != 0]:
                 idx = max(phases_score.items(), key=operator.itemgetter(1))[0]
@@ -103,11 +107,12 @@ class Analytical_Agent(Agent):
             n_crit = Q * T * ((T_max - z) / (T_max - T))
 
             waiting = movement.green_time * movement.max_saturation
+           
             if waiting > n_crit:
                 T_res = T * (1 - sum_Q / movement.max_saturation) - self.clearing_time * len(self.movements)
                 green_max = (Q / movement.max_saturation) * T + (1 / len(self.movements)) * T_res
                 priority_list.append((movement, green_max))
-
-
+            
         priority_list = add_phase_to_queue(priority_list)
-        
+        # while priority_list:
+        #     priority_list = add_phase_to_queue(priority_list)

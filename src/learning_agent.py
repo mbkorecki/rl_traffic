@@ -42,14 +42,14 @@ class Learning_Agent(Agent):
             phase.vector = vec.tolist()
             idx+=1    
     
-    def observe(self, eng, time, lanes_count):
+    def observe(self, eng, time, lanes_count, lane_vehs, vehs_distance):
         """
         generates the observations made by the agents
         :param eng: the cityflow simulation engine
         :param time: the time of the simulation
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lanes_count) + self.get_out_lanes_veh_num(eng, lanes_count)
+        observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count)
         return observations
 
     def act(self, net_local, state, time, eps = 0):
@@ -83,16 +83,33 @@ class Learning_Agent(Agent):
                 lanes_veh_num.append(lanes_count[lane])
         return lanes_veh_num
 
-    def get_in_lanes_veh_num(self, eng, lanes_count):
+    def get_in_lanes_veh_num(self, eng, lanes_veh, vehs_distance):
         """
         gets the number of vehicles on the incoming lanes of the intersection
         :param eng: the cityflow simulation engine
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
+        
         lanes_veh_num = []
         for road in self.in_roads:
             lanes = eng.get_road_lanes(road)
             for lane in lanes:
-                lanes_veh_num.append(lanes_count[lane])
+                length = self.in_lanes_length[lane]
+                seg1 = 0
+                seg2 = 0
+                seg3 = 0
+                vehs = lanes_veh[lane]
+                for veh in vehs:
+                    if vehs_distance[veh] / length >= 0.66:
+                        seg1 += 1
+                    elif vehs_distance[veh] / length >= 0.33:
+                        seg2 += 1
+                    else:
+                        seg3 +=1
+     
+                lanes_veh_num.append(seg1)
+                lanes_veh_num.append(seg2)
+                lanes_veh_num.append(seg3)
+
         return lanes_veh_num
 

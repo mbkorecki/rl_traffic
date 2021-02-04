@@ -25,12 +25,6 @@ class Environment:
         self.eng = cityflow.Engine(args.sim_config, thread_num=8)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.n_actions = n_actions
-        self.n_states = n_states
-        
-        self.local_net = DQN(n_states, n_actions, seed=2).to(self.device)
-        self.target_net = DQN(n_states, n_actions, seed=2).to(self.device)
-
         self.update_freq = args.update_freq      # how often to update the network
         self.batch_size = args.batch_size
         
@@ -38,9 +32,6 @@ class Environment:
         self.eps_end = 0.01
         self.eps_decay= 5e-5
         self.eps = self.eps_start
-        
-        self.optimizer = optim.Adam(self.local_net.parameters(), lr=args.lr, amsgrad=True)
-        self.memory = ReplayMemory(self.n_actions, batch_size=args.batch_size)
 
         self.agents = []
 
@@ -74,6 +65,18 @@ class Environment:
                 self.agents.append(new_agent)
 
         self.action_freq = 10   #typical update freq for agents
+
+        
+        self.n_actions = len(self.agents[0].phases)
+        self.n_states = n_states
+        
+        self.local_net = DQN(n_states, n_actions, seed=2).to(self.device)
+        self.target_net = DQN(n_states, n_actions, seed=2).to(self.device)
+
+        
+        self.optimizer = optim.Adam(self.local_net.parameters(), lr=args.lr, amsgrad=True)
+        self.memory = ReplayMemory(self.n_actions, batch_size=args.batch_size)
+        
         print(len(self.agents))
         
     def analytical_step(self, time, done):
@@ -122,6 +125,7 @@ class Environment:
         """
         lanes_count = self.eng.get_lane_vehicle_count()
         lane_vehs = self.eng.get_lane_vehicles()
+        veh_distance = self.eng.get_vehicle_distance()
         waiting_vehs = None
 
         for agent in self.agents:
@@ -134,18 +138,17 @@ class Environment:
                     agent.reward = reward
                     agent.total_rewards += reward
                     agent.reward_count += 1
-                    next_state = torch.FloatTensor(agent.observe(self.eng, time, lanes_count)).unsqueeze(0)
+                    next_state = torch.FloatTensor(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance)).unsqueeze(0)
                     self.memory.add(agent.state, agent.action.ID, reward, next_state, done)
                     agent.action_type = "act"
                                     
                 if agent.action_type == "act":
-                    agent.state = np.asarray(agent.observe(self.eng, time, lanes_count))
+                    agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
                     agent.action = agent.act(self.local_net, agent.state, time, eps=self.eps)
                     agent.green_time = 10
-                    if waiting_vehs == None: waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
-                    agent.update_wait_time(agent.action, agent.green_time, waiting_vehs)
                     
                     if agent.action != agent.phase:
+                        agent.update_wait_time(time, agent.action, agent.phase)
                         agent.set_phase(self.eng, agent.clearing_phase)
                         agent.action_type = "update"
                         agent.action_freq = time + agent.clearing_time
@@ -171,7 +174,6 @@ class Environment:
         """
         print(time)
         lanes_count = self.eng.get_lane_vehicle_count()
-        lanes_count = self.eng.get_lane_vehicle_count()
 
         for agent in self.agents:
             if time % agent.action_freq == 0:
@@ -180,8 +182,7 @@ class Environment:
                     agent.reward_count += 1
                     agent.action = agent.act(lanes_count)
                     agent.green_time = 10
-                    if waiting_vehs == None: waiting_vehs = self.eng.get_lane_waiting_vehicle_count()
-                    agent.update_wait_time(agent.action, agent.green_time, waiting_vehs)
+                    agent.update_wait_time(time, agent.action, agent.phase)
                     
                     if agent.phase.ID != agent.action.ID:
                         agent.set_phase(self.eng, agent.clearing_phase)
