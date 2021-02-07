@@ -16,8 +16,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class DQN(nn.Module):
     """ Actor (Policy) Model."""
-    def __init__(self, state_size, action_size, seed=2, fc1_unit=256,
-                 fc2_unit = 128):
+    def __init__(self, state_size, action_size, seed=2, fc1_unit=64,
+                 fc2_unit = 32):
         """
         Initialize parameters and build model.
         Params
