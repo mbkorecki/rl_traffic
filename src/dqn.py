@@ -9,7 +9,7 @@ import torch.optim as optim
 
 BUFFER_SIZE = int(1e5)  # replay buffer size
 GAMMA = 0.999           # discount factor
-TAU = 1              # for soft update of target parameters
+TAU = 1e-3              # for soft update of target parameters
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -72,8 +72,8 @@ def optimize_model(experiences, net_local, net_target, optimizer, gamma=GAMMA):
     optimizer.zero_grad()
     loss.backward()
     
-    # for param in net_local.parameters():
-    #     param.grad.data.clamp_(-1, 1)
+    for param in net_local.parameters():
+        param.grad.data.clamp_(-1, 1)
     # torch.nn.utils.clip_grad.clip_grad_norm_(net_local.parameters(), 10)
 
     optimizer.step()
