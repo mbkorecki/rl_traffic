@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 BUFFER_SIZE = int(1e5)  # replay buffer size
-GAMMA = 0.9           # discount factor
+GAMMA = 0.999           # discount factor
 TAU = 1e-3              # for soft update of target parameters
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -16,8 +16,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class DQN(nn.Module):
     """ Actor (Policy) Model."""
-    def __init__(self, state_size, action_size, seed=2, fc1_unit=128,
-                 fc2_unit = 64):
+    def __init__(self, state_size, action_size, seed=2, fc1_unit=256,
+                 fc2_unit = 128):
         """
         Initialize parameters and build model.
         Params
@@ -42,7 +42,6 @@ class DQN(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         return self.fc3(x)
-
 
 
 def optimize_model(experiences, net_local, net_target, optimizer, gamma=GAMMA):
