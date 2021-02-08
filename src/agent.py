@@ -120,7 +120,7 @@ class Agent:
         gets the reward of the agent in the form of pressure
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        return -np.abs(np.sum([lanes_count[x] / int(self.in_lanes_length[x]/5) for x in self.in_lanes])
+        return -100*np.abs(np.sum([lanes_count[x] / int(self.in_lanes_length[x]/5) for x in self.in_lanes])
                        -np.sum([lanes_count[x] / int(self.out_lanes_length[x]/5) for x in self.out_lanes]))
 
         
