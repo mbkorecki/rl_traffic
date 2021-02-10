@@ -108,10 +108,11 @@ class Movement:
         :returns: the pressure of the movement
         """
         pressure = np.sum([lanes_count[x] for x in self.in_lanes])
-        pressure -= np.sum([lanes_count[x] for x in self.out_lanes])
+        # pressure -= np.sum([lanes_count[x] for x in self.out_lanes])
+        pressure -= int(np.mean([lanes_count[x] for x in self.out_lanes]))
+
         self.pressure = pressure
         return pressure
-        
 
     def get_demand(self, lanes_count):
         """

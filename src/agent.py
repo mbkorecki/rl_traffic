@@ -120,15 +120,16 @@ class Agent:
         gets the reward of the agent in the form of pressure
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        pressure = 0
-        for x in self.movements:
-            pressure += np.sum([lanes_count[lane] for lane in x.in_lanes]) - np.sum([lanes_count[lane] for lane in x.out_lanes])
-        return -np.abs(pressure)
+        # pressure = 0
+        # for x in self.movements.values():
+        #     pressure += np.sum([lanes_count[lane] / int(self.in_lanes_length[lane]/5) for lane in x.in_lanes]) - np.sum([lanes_count[lane] / int(self.in_lanes_length[lane]/5) for lane in x.out_lanes])
+        # return -np.abs(pressure)
     
         # return -np.abs(np.sum([lanes_count[x] / int(self.in_lanes_length[x]/5) for x in self.in_lanes])
         #                -np.sum([lanes_count[x] / int(self.out_lanes_length[x]/5) for x in self.out_lanes]))
 
-        
+        return -np.abs(np.sum([x.get_pressure(lanes_count) for x in self.movements.values()]))
+    
     def update_arr_dep_veh_num(self, lanes_vehs):
         """
         Updates the list containing the number vehicles that arrived and departed
