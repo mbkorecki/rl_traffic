@@ -58,9 +58,10 @@ class Agent:
                 self.in_lanes_length.update({lane : length})
                 
             for lane, length in eng.get_road_lanes_length(out_road):
+                out_lane_length = length
                 self.out_lanes_length.update({lane : length})
                 
-            new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length, clearing_time=self.clearing_time)
+            new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length, out_lane_length, clearing_time=self.clearing_time)
             self.movements.update({roadlink[0] : new_movement})
             
     def init_phases(self, eng):

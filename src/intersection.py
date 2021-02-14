@@ -5,7 +5,7 @@ class Movement:
     """
     The class defining a Movement on an intersection, a Movement of vehicles from incoming road -> outgoing road
     """
-    def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, lane_length, clearing_time=2, phases=[]):
+    def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, in_length, out_length, clearing_time=2, phases=[]):
         """
         initialises the Movement, the movement has a type 1, 2 or 3
         1 -> turn right, 2 -> turn left, 3 -> go straight
@@ -25,7 +25,8 @@ class Movement:
         self.in_lanes = in_lanes
         self.out_lanes = out_lanes
 
-        self.length = lane_length
+        self.in_length = in_length
+        self.out_length = out_length
         self.phases = phases
         self.clearing_time = clearing_time
 
@@ -35,7 +36,7 @@ class Movement:
         self.move_type = None 
         self.max_saturation = 2.2
         self.max_speed = 11
-        self.pass_time = int(np.ceil(self.length / self.max_speed))
+        self.pass_time = int(np.ceil(self.in_length / self.max_speed))
 
 
         self.prev_vehs = set()
@@ -107,9 +108,9 @@ class Movement:
         :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
         :returns: the pressure of the movement
         """
-        pressure = np.sum([lanes_count[x] for x in self.in_lanes])
+        pressure = np.sum([lanes_count[x] / self.in_length for x in self.in_lanes])
         # pressure -= np.sum([lanes_count[x] for x in self.out_lanes])
-        pressure -= int(np.mean([lanes_count[x] for x in self.out_lanes]))
+        pressure -= np.mean([lanes_count[x] / self.out_length for x in self.out_lanes])
 
         self.pressure = pressure
         return pressure
