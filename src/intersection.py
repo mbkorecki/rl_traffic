@@ -112,8 +112,8 @@ class Movement:
         # pressure -= np.sum([lanes_count[x] for x in self.out_lanes])
         pressure -= np.mean([lanes_count[x] / self.out_length for x in self.out_lanes])
 
-        self.pressure = pressure
-        return pressure
+        self.pressure = 100*pressure
+        return 100*pressure
 
     def get_demand(self, lanes_count):
         """
