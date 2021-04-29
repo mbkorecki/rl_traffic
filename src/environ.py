@@ -9,6 +9,7 @@ from learning_agent import Learning_Agent
 from analytical_agent import Analytical_Agent
 from demand_agent import Demand_Agent
 from hybrid_agent import Hybrid_Agent
+from policy_agent import Policy_Agent
 
 class Environment:
     """
@@ -42,6 +43,8 @@ class Environment:
             self.step = self.learning_step
         elif self.agents_type == 'demand':
             self.step = self.demand_step
+        elif self.agents_type == 'policy':
+            self.step = self.policy_step
         else:
             raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/learning/demand/hybrid")  
         
@@ -54,7 +57,10 @@ class Environment:
             elif self.agents_type == 'demand':
                 new_agent = Demand_Agent(self.eng, ID=agent_id)
             elif self.agents_type == 'hybrid':
-                new_agent = Hybrid_Agent(self.eng, ID=agent_id, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id)) 
+                new_agent = Hybrid_Agent(self.eng, ID=agent_id, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
+            elif self.agents_type == 'policy':
+                new_agent = Policy_Agent(self.eng, ID=agent_id, state_dim=n_states, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
+
             else:
                 raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/learning/demand/hybrid")  
 
@@ -73,10 +79,9 @@ class Environment:
         self.local_net = DQN(n_states, n_actions, seed=2).to(self.device)
         self.target_net = DQN(n_states, n_actions, seed=2).to(self.device)
 
-        
         self.optimizer = optim.Adam(self.local_net.parameters(), lr=args.lr, amsgrad=True)
         self.memory = ReplayMemory(self.n_actions, batch_size=args.batch_size)
-        
+
         print(len(self.agents))
         
     def analytical_step(self, time, done):
@@ -198,6 +203,67 @@ class Environment:
                     agent.action_type = "act"
 
         self.eng.next_step()
+
+
+    def policy_step(self, time, done):
+        """
+        represents a single step of the simulation for the policy gradient agent
+        :param time: the current timestep
+        :param done: flag indicating weather this has been the last step of the episode
+        """
+        lanes_count = self.eng.get_lane_vehicle_count()
+        lane_vehs = self.eng.get_lane_vehicles()
+        veh_distance = self.eng.get_vehicle_distance()
+        waiting_vehs = None
+
+        for agent in self.agents:
+            if time % agent.action_freq == 0:
+               if agent.action_type == "act":
+
+                   agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
+                   agent.action = agent.act(torch.as_tensor(agent.state, dtype=torch.float32))
+                   agent.green_time = 10
+
+                   reward = agent.get_reward(lanes_count)
+
+                   agent.batch_obs.append(agent.state.copy())
+                   agent.batch_acts.append(agent.action.ID)
+                   agent.ep_rews.append(-reward)
+
+                   if agent.phase.ID != agent.action.ID:
+                       agent.set_phase(self.eng, agent.clearing_phase)
+                       agent.action_freq = time + agent.clearing_time
+                       agent.action_type = "update"
+                   else:
+                       agent.action_freq = time + agent.green_time
+
+               elif agent.action_type == "update":
+                   agent.set_phase(self.eng, agent.action)
+                   agent.action_freq = time + agent.green_time
+                   agent.action_type = "act"
+
+            if done:
+                # if episode is over, record info about episode
+                ep_ret, ep_len = sum(agent.ep_rews), len(agent.ep_rews)
+                agent.batch_rets.append(ep_ret)
+                agent.batch_lens.append(ep_len)
+
+                # the weight for each logprob(a_t|s_t) is reward-to-go from t
+                agent.batch_weights += list(agent.reward_to_go(agent.ep_rews))
+                agent.ep_rews = []
+
+                agent.optimizer.zero_grad()
+                batch_loss = agent.compute_loss(obs=torch.as_tensor(agent.batch_obs, dtype=torch.float32),
+                                      act=torch.as_tensor(agent.batch_acts, dtype=torch.int32),
+                                      weights=torch.as_tensor(agent.batch_weights, dtype=torch.float32)
+                                      )
+                batch_loss.backward()
+                agent.optimizer.step()
+
+        self.eng.next_step()
+
+
+
         
     def reset(self):
         """

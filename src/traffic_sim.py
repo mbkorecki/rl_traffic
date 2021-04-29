@@ -34,18 +34,13 @@ def parse_args():
     parser.add_argument("--update_freq", default=10, type=int,
                         help="the frequency of the updates (training pass) of the deep-q-network, default=10")
     parser.add_argument("--batch_size", default=64, type=int, help="the size of the mini-batch used to train the deep-q-network, default=64")
-    parser.add_argument("--lr", default=5e-4, type=int, help="the learning rate for the dqn, default=5e-4")
+    parser.add_argument("--lr", default=5e-4, type=float, help="the learning rate for the dqn, default=5e-4")
 
     return parser.parse_args()
 
+
+
 args = parse_args()
-
-# eng = cityflow.Engine(args.sim_config, thread_num=8)
-# for i in range(1800):
-#     print(i)
-#     eng.next_step()
-# print(eng.get_average_travel_time(), eng.get_finished_vehicle_count())
-
 logger = Logger(args)
 environ = Environment(args, n_actions=9, n_states=57)
 
@@ -81,9 +76,9 @@ for i_episode in range(num_episodes):
         if (environ.agents_type == 'learning' or environ.agents_type == 'hybrid') and step == 0:
             if len(environ.memory)>environ.batch_size:
                 experience = environ.memory.sample()
-                logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))
-
-    logger.log_measures(environ)
+                logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))            
+                
+    # logger.log_measures(environ)
     print(logger.reward, environ.eng.get_average_travel_time(), environ.eng.get_finished_vehicle_count())
 
 

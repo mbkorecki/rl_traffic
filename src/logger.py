@@ -180,6 +180,6 @@ class Logger:
         Saves machine learning models (for now just neural networks)
         :param environ: the environment in which the model was run
         """
-        torch.save(environ.local_net.state_dict(), self.log_path + '/policy_net.pt')
+        torch.save(environ.local_net.state_dict(), self.log_path + '/q_net.pt')
         torch.save(environ.target_net.state_dict(), self.log_path + '/target_net.pt')
 
