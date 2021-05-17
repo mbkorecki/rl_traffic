@@ -3,13 +3,19 @@ import torch
 import torch.optim as optim
 import numpy as np
 import matplotlib.pyplot as plt
+import random
+
+import torch
+import torch.nn as nn
+from torch.distributions.categorical import Categorical
+from torch.optim import Adam
 
 from dqn import DQN, ReplayMemory, optimize_model
 from learning_agent import Learning_Agent
 from analytical_agent import Analytical_Agent
 from demand_agent import Demand_Agent
 from hybrid_agent import Hybrid_Agent
-from policy_agent import Policy_Agent
+from policy_agent import DPGN, Policy_Agent
 
 class Environment:
     """
@@ -82,6 +88,14 @@ class Environment:
         self.optimizer = optim.Adam(self.local_net.parameters(), lr=args.lr, amsgrad=True)
         self.memory = ReplayMemory(self.n_actions, batch_size=args.batch_size)
 
+        self.seed = torch.manual_seed(2)
+        hidden_sizes = [128, 64]
+        self.logits_net = DPGN(sizes=[self.n_states]+hidden_sizes+[self.n_actions])
+        self.pol_opt = Adam(self.logits_net.parameters(), lr=5e-4, amsgrad=True)
+
+        self.value_net = DPGN(sizes=[self.n_states]+hidden_sizes+[1])
+        self.val_opt = Adam(self.logits_net.parameters(), lr=1e-3, amsgrad=True)
+        
         print(len(self.agents))
         
     def analytical_step(self, time, done):
@@ -136,6 +150,11 @@ class Environment:
         for agent in self.agents:
             if self.agents_type == "hybrid":
                 agent.update_arr_dep_veh_num(lane_vehs)
+            # else:
+            #     #TODO: REMOVE AFTER TESTS
+            #     agent.update_arr_dep_veh_num(lane_vehs)
+            #     # agent.update_priority_idx(time)
+
             if time % agent.action_freq == 0:
                 if agent.action_type == "reward":
                     reward = agent.get_reward(lanes_count)
@@ -218,53 +237,87 @@ class Environment:
 
         for agent in self.agents:
             if time % agent.action_freq == 0:
-               if agent.action_type == "act":
+                if agent.action_type == "reward":
+                    reward = agent.get_reward(lanes_count)
+                    agent.ep_rews.append(reward)
+                    agent.action_type = "act"
 
-                   agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
-                   agent.action = agent.act(torch.as_tensor(agent.state, dtype=torch.float32))
-                   agent.green_time = 10
+                if agent.action_type == "act":
 
-                   reward = agent.get_reward(lanes_count)
+                    agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
+                    agent.batch_obs.append(agent.state.copy())
+                    
+                    agent.action = agent.act(torch.as_tensor(agent.state, dtype=torch.float32), self.logits_net)
+                    agent.batch_acts.append(agent.action.ID)
 
-                   agent.batch_obs.append(agent.state.copy())
-                   agent.batch_acts.append(agent.action.ID)
-                   agent.ep_rews.append(-reward)
+                    agent.green_time = 10
 
-                   if agent.phase.ID != agent.action.ID:
-                       agent.set_phase(self.eng, agent.clearing_phase)
-                       agent.action_freq = time + agent.clearing_time
-                       agent.action_type = "update"
-                   else:
-                       agent.action_freq = time + agent.green_time
+                    # reward = agent.get_reward(lanes_count)
+                    # agent.ep_rews.append(-reward)
 
-               elif agent.action_type == "update":
+
+                    if agent.phase.ID != agent.action.ID:
+                        agent.set_phase(self.eng, agent.clearing_phase)
+                        agent.action_freq = time + agent.clearing_time
+                        agent.action_type = "update"
+                    else:
+                        agent.action_freq = time + agent.green_time
+                        agent.action_type = "reward"
+
+                elif agent.action_type == "update":
                    agent.set_phase(self.eng, agent.action)
                    agent.action_freq = time + agent.green_time
-                   agent.action_type = "act"
+                   agent.action_type = "reward"
 
             if done:
-                # if episode is over, record info about episode
-                ep_ret, ep_len = sum(agent.ep_rews), len(agent.ep_rews)
-                agent.batch_rets.append(ep_ret)
-                agent.batch_lens.append(ep_len)
+                # if episode is over, record info about episode               
+                
+                agent.ep_rews.append(0)
 
-                # the weight for each logprob(a_t|s_t) is reward-to-go from t
-                agent.batch_weights += list(agent.reward_to_go(agent.ep_rews))
-                agent.ep_rews = []
+                if len(agent.ep_rews) > 1:
+                    agent.batch_weights = agent.discount_cumsum(agent.ep_rews, agent.gamma)[:-1]
 
-                agent.optimizer.zero_grad()
-                batch_loss = agent.compute_loss(obs=torch.as_tensor(agent.batch_obs, dtype=torch.float32),
-                                      act=torch.as_tensor(agent.batch_acts, dtype=torch.int32),
-                                      weights=torch.as_tensor(agent.batch_weights, dtype=torch.float32)
-                                      )
-                batch_loss.backward()
-                agent.optimizer.step()
+                    with torch.no_grad():
+                        value_loss = self.value_net(torch.from_numpy(np.asarray(agent.batch_obs)).float().unsqueeze(0))
+
+                    rews = np.asarray(agent.ep_rews[:-1]).reshape(np.asarray(agent.ep_rews[:-1]).shape[0], 1)
+                    value_loss = value_loss.numpy()[0] + [0]
+
+                    deltas = rews + agent.gamma * value_loss[1:] - value_loss[:-1]
+                    adv = agent.discount_cumsum(deltas, agent.gamma * agent.lam)
+
+                    # value_loss = agent.discount_cumsum(agent.ep_rews, 0.99) - value_loss.numpy()[0]
+                    # value_loss = agent.ep_rews - value_loss.numpy()[0]
+                    # value_loss = agent.discount_cumsum(agent.ep_rews - value_loss.numpy()[0], agent.gamma)
+
+                    adv = (adv - adv.mean()) / adv.std()
+
+                    self.pol_opt.zero_grad()
+                    batch_loss = agent.compute_loss(obs=torch.as_tensor(agent.batch_obs, dtype=torch.float32),
+                                          act=torch.as_tensor(agent.batch_acts, dtype=torch.int32),
+                                          weights=torch.as_tensor(adv.copy(), dtype=torch.float32),
+                                          net=self.logits_net
+                                          )
+                    print(batch_loss.item())
+                    batch_loss.backward()
+                    self.pol_opt.step()
+
+                    for t in range(1):
+                        self.val_opt.zero_grad()
+                        value_loss = ((self.value_net(torch.from_numpy(np.asarray(agent.batch_obs)).float().unsqueeze(0)) -
+                                       torch.from_numpy(np.asarray(agent.batch_weights).copy()).float().unsqueeze(0))**2).mean()
+                        value_loss.backward()
+                        self.val_opt.step()
+
+                    agent.batch_obs = []          # for observations
+                    agent.batch_acts = []         # for actions
+                    agent.batch_weights = []      # for reward-to-go weighting in policy gradient
+                    agent.ep_rews = []            # list for rewards accrued throughout ep
+
 
         self.eng.next_step()
 
 
-
-        
     def reset(self):
         """
         resets the movements amd rewards for each agent and the simulation environment, should be called after each episode
@@ -275,4 +328,7 @@ class Environment:
             agent.reset_movements()
             agent.total_rewards = 0
             agent.reward_count = 0
+            agent.action_type = 'act'
+
+
 

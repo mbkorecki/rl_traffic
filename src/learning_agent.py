@@ -49,7 +49,11 @@ class Learning_Agent(Agent):
         :param time: the time of the simulation
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count)
+        # future_arr = [(x.get_arr_veh_num(time-180, time)/180) * 10 for x in self.movements.values()]
+        # lanes = [x.in_lanes[0] for x in self.movements.values()]
+        # self.future_lanes_arr = dict(zip(lanes, future_arr))
+
+        observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count) 
         return observations
 
     def act(self, net_local, state, time, eps = 0):
@@ -68,8 +72,8 @@ class Learning_Agent(Agent):
             return self.phases[np.argmax(action_values.cpu().data.numpy())]
         else:
             return self.phases[random.choice(np.arange(self.n_actions))]
-    
-    
+
+        
     def get_out_lanes_veh_num(self, eng, lanes_count):
         """
         gets the number of vehicles on the outgoing lanes of the intersection
@@ -93,7 +97,7 @@ class Learning_Agent(Agent):
         lanes_veh_num = []
         for road in self.in_roads:
             lanes = eng.get_road_lanes(road)
-            for lane in lanes:
+            for lane in lanes: 
                 length = self.in_lanes_length[lane]
                 seg1 = 0
                 seg2 = 0

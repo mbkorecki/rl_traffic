@@ -78,7 +78,7 @@ for i_episode in range(num_episodes):
                 experience = environ.memory.sample()
                 logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))            
                 
-    # logger.log_measures(environ)
+    logger.log_measures(environ)
     print(logger.reward, environ.eng.get_average_travel_time(), environ.eng.get_finished_vehicle_count())
 
 

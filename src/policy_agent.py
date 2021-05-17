@@ -2,6 +2,8 @@ import cityflow
 import numpy as np
 import random
 
+import scipy.signal
+
 import torch
 import torch.nn as nn
 from torch.distributions.categorical import Categorical
@@ -10,7 +12,7 @@ from torch.optim import Adam
 from intersection import Movement, Phase
 from agent import Agent
 
-def DPGN(sizes, activation=nn.Tanh, output_activation=nn.Identity):
+def DPGN(sizes, activation=nn.ReLU, output_activation=nn.Identity):
     # Build a feedforward neural network.
     layers = []
     for j in range(len(sizes)-1):
@@ -37,18 +39,23 @@ class Policy_Agent(Agent):
         self.init_phases_vectors(eng)
         self.n_actions = len(self.phases)
 
-        hidden_sizes = [64]
-        self.logits_net = DPGN(sizes=[state_dim]+hidden_sizes+[self.n_actions])
-        self.optimizer = Adam(self.logits_net.parameters(), lr=1e-2)
+        # hidden_sizes = [128, 64]
+        # self.seed = torch.manual_seed(2)
+        # self.logits_net = DPGN(sizes=[state_dim]+hidden_sizes+[self.n_actions])
+        # self.pol_opt = Adam(self.logits_net.parameters(), lr=5e-4, amsgrad=True)
+
+        # self.value_net = DPGN(sizes=[state_dim]+hidden_sizes+[1])
+        # self.val_opt = Adam(self.logits_net.parameters(), lr=1e-3, amsgrad=True)
 
 
         self.batch_obs = []          # for observations
         self.batch_acts = []         # for actions
         self.batch_weights = []      # for reward-to-go weighting in policy gradient
-        self.batch_rets = []         # for measuring episode returns
-        self.batch_lens = []         # for measuring episode lengths
 
         self.ep_rews = []            # list for rewards accrued throughout ep
+
+        self.gamma = 0.98
+        self.lam = 0.95
         
     def init_phases_vectors(self, eng):
         """
@@ -74,13 +81,22 @@ class Policy_Agent(Agent):
         """
         observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count)
         return observations
-    
-    def reward_to_go(self, rews):
-        n = len(rews)
-        rtgs = np.zeros_like(rews)
-        for i in reversed(range(n)):
-            rtgs[i] = rews[i] + (rtgs[i+1] if i+1 < n else 0)
-        return rtgs
+
+    def discount_cumsum(self, x, discount):
+        """
+        magic from rllab for computing discounted cumulative sums of vectors.
+        input: 
+            vector x, 
+            [x0, 
+             x1, 
+             x2]
+        output:
+            [x0 + discount * x1 + discount^2 * x2,  
+             x1 + discount * x2,
+             x2]
+        """
+        return scipy.signal.lfilter([1], [1, float(-discount)], x[::-1], axis=0)[::-1]
+
 
     # def get_reward(self, lanes_count):
     #     """
@@ -89,17 +105,17 @@ class Policy_Agent(Agent):
     #     """
     #     return -sum(lanes_count.values())
 
-    def get_policy(self, obs):
-        logits = self.logits_net(obs)
+    def get_policy(self, obs, logits_net):
+        logits = logits_net(obs)
         return Categorical(logits=logits)
 
     # make action selection function (outputs int actions, sampled from policy)
-    def act(self, obs):
-        return self.phases[self.get_policy(obs).sample().item()]
+    def act(self, obs, net):
+        return self.phases[self.get_policy(obs, net).sample().item()]
 
-    def compute_loss(self, obs, act, weights):
-        logp = self.get_policy(obs).log_prob(act)
-        return -(logp * weights).mean()
+    def compute_loss(self, obs, act, weights, net):
+        logp = self.get_policy(obs, net).log_prob(act)
+        return -(logp[:-1] * weights.reshape(weights.shape[0],)).mean()
     
     def get_out_lanes_veh_num(self, eng, lanes_count):
         """

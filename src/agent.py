@@ -35,7 +35,6 @@ class Agent:
         self.out_lanes = [x.out_lanes for x in self.movements.values()]
         self.out_lanes = set([x for sublist in self.out_lanes for x in sublist])
 
-
     def init_movements(self, eng):
         """
         initialises the movements of the Agent based on the lane links extracted from the simulation roadnet
@@ -129,7 +128,10 @@ class Agent:
         # return -np.abs(np.sum([lanes_count[x] / int(self.in_lanes_length[x]/5) for x in self.in_lanes])
         #                -np.sum([lanes_count[x] / int(self.out_lanes_length[x]/5) for x in self.out_lanes]))
 
-        return -np.abs(np.sum([x.get_pressure(lanes_count) for x in self.movements.values()]))
+
+        # sum_wt = max(1, np.sum([x.waiting_time for x in self.movements.values()]))
+        return -np.abs(np.sum([x.get_pressure(lanes_count) * x.waiting_time for x in self.movements.values()]))
+
     
     def update_arr_dep_veh_num(self, lanes_vehs):
         """

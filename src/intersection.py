@@ -109,7 +109,6 @@ class Movement:
         :returns: the pressure of the movement
         """
         pressure = np.sum([lanes_count[x] / self.in_length for x in self.in_lanes])
-        # pressure -= np.sum([lanes_count[x] for x in self.out_lanes])
         pressure -= np.mean([lanes_count[x] / self.out_length for x in self.out_lanes])
 
         self.pressure = pressure
