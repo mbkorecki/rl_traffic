@@ -92,7 +92,7 @@ class Agent:
             if empty_phases:
                 self.clearing_phase = Phase(empty_phases[0], [])
                 self.phases.update({empty_phases[0] : self.clearing_phase})
-
+            
         self.phase = self.clearing_phase
         temp_moves = dict(self.movements)
         self.movements.clear()
@@ -105,6 +105,7 @@ class Agent:
                 if phase.ID not in self.movements[move].phases:
                     self.movements[move].phases.append(phase.ID)
 
+        
 
     def set_phase(self, eng, phase):
         """
@@ -129,8 +130,9 @@ class Agent:
         #                -np.sum([lanes_count[x] / int(self.out_lanes_length[x]/5) for x in self.out_lanes]))
 
 
-        # sum_wt = max(1, np.sum([x.waiting_time for x in self.movements.values()]))
-        return -np.abs(np.sum([x.get_pressure(lanes_count) * x.waiting_time for x in self.movements.values()]))
+        # sum_wt = max(1, np.sum([x.waiting_time for x in self.movements.values()])
+        
+        return -np.abs(np.sum([x.get_pressure(lanes_count) for x in self.movements.values()]))
 
     
     def update_arr_dep_veh_num(self, lanes_vehs):
@@ -142,7 +144,7 @@ class Agent:
             movement.update_arr_dep_veh_num(lanes_vehs)
 
 
-    def update_wait_time(self, time, action, phase):
+    def update_wait_time(self, time, action, phase, lanes_count):
         """
         Updates movements' waiting time - the time a given movement has waited to be enabled
         :parama time: the current time
@@ -150,7 +152,7 @@ class Agent:
         :param phase: the phase at the intersection up till this time step
         """
         for movement in self.movements.values():
-            movement.update_wait_time(time, action, phase)
+            movement.update_wait_time(time, action, phase, lanes_count)
             
     def reset_movements(self):
         """

@@ -35,6 +35,12 @@ def parse_args():
                         help="the frequency of the updates (training pass) of the deep-q-network, default=10")
     parser.add_argument("--batch_size", default=64, type=int, help="the size of the mini-batch used to train the deep-q-network, default=64")
     parser.add_argument("--lr", default=5e-4, type=float, help="the learning rate for the dqn, default=5e-4")
+    parser.add_argument("--eps_start", default=1, type=float, help="the epsilon start")
+    parser.add_argument("--eps_end", default=0.01, type=float, help="the epsilon decay")
+    # parser.add_argument("--eps_decay", default=0.95, type=float, help="the epsilon end")
+    parser.add_argument("--eps_decay", default=5e-5, type=float, help="the epsilon decay")
+    parser.add_argument("--eps_update", default=1799, type=float, help="how frequently epsilon is decayed")
+
 
     return parser.parse_args()
 
@@ -76,7 +82,13 @@ for i_episode in range(num_episodes):
         if (environ.agents_type == 'learning' or environ.agents_type == 'hybrid') and step == 0:
             if len(environ.memory)>environ.batch_size:
                 experience = environ.memory.sample()
-                logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))            
+                logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))
+        if environ.agents_type == 'presslight' and step == 0:
+            if len(environ.memory)>environ.batch_size:
+                experience = environ.memory.sample()
+                logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer, tau=1))
+
+            
                 
     logger.log_measures(environ)
     print(logger.reward, environ.eng.get_average_travel_time(), environ.eng.get_finished_vehicle_count())
@@ -85,6 +97,6 @@ for i_episode in range(num_episodes):
 logger.save_log_file(environ)
 logger.serialise_data(environ)
 
-if environ.agents_type == 'learning' or environ.agents_type == 'hybrid':
+if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight':
     logger.save_measures_plots()
     logger.save_models(environ)

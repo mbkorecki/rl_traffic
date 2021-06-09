@@ -49,13 +49,15 @@ class Movement:
         self.priority = 0
         self.last_on_time = 0
 
-    def update_wait_time(self, time, action, phase):
+    def update_wait_time(self, time, action, phase, lanes_count):
         """
         Updates movement's waiting time - the time a given movement has waited to be enabled
         :parama time: the current time
         :param action: the phase to be chosen for the intersection in this time step
         :param phase: the phase at the intersection up till this time step
         """
+        count = sum([lanes_count[x] for x in self.in_lanes])
+
         if self.ID not in action.movements and self.ID in phase.movements:
             self.last_on_time = time           
         elif self.ID in action.movements and self.ID not in phase.movements:
@@ -64,9 +66,13 @@ class Movement:
             else:
                 self.waiting_time = time + 2 - self.last_on_time
                 self.waiting_time_list.append(self.waiting_time)
-            if  self.waiting_time > self.max_waiting_time:
-                self.max_waiting_time = self.waiting_time
+                if  self.waiting_time > self.max_waiting_time:
+                    self.max_waiting_time = self.waiting_time
+                self.waiting_time = 0
+                
             self.last_on_time = -1
+        elif count == 0 and self.ID not in action.movements and self.ID not in phase.movements:
+            self.last_on_time = time           
 
     def get_dep_veh_num(self, start_time, end_time):
         """
@@ -112,7 +118,7 @@ class Movement:
         pressure -= np.mean([lanes_count[x] / self.out_length for x in self.out_lanes])
 
         self.pressure = pressure
-        return pressure
+        return self.pressure
 
     def get_demand(self, lanes_count):
         """

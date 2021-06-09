@@ -25,8 +25,8 @@ class Logger:
         self.episode_losses = []
 
         self.reward = 0
-        
-        self.log_path = "../results" + '-' + args.sim_config.split('/')[2] + '-' + str(args.agents_type) + '-' + str(args.num_episodes) + '-' + str(args.update_freq)
+
+        self.log_path = "../" + args.sim_config.split('/')[2] +'_' + 'config' + args.sim_config.split('/')[3].split('.')[0] + '_' + str(args.agents_type)
         old_path = self.log_path
         i = 1
 
@@ -71,7 +71,7 @@ class Logger:
             pickle.dump(reward_dict, f) 
 
 
-        if environ.agents_type == 'learning' or environ.agents_type == 'hybrid':
+        if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight':
             with open(self.log_path + "/" + "episode_rewards.pickle", "wb") as f:
                 pickle.dump(self.plot_rewards, f)
 

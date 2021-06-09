@@ -49,14 +49,10 @@ class Learning_Agent(Agent):
         :param time: the time of the simulation
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        # future_arr = [(x.get_arr_veh_num(time-180, time)/180) * 10 for x in self.movements.values()]
-        # lanes = [x.in_lanes[0] for x in self.movements.values()]
-        # self.future_lanes_arr = dict(zip(lanes, future_arr))
-
-        observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count) 
+        observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count)
         return observations
 
-    def act(self, net_local, state, time, eps = 0):
+    def act(self, net_local, state, lanes_count, time, eps = 0):
         """
         generates the action to be taken by the agent
         :param net_local: the neural network used in the decision making process
@@ -69,7 +65,9 @@ class Learning_Agent(Agent):
             with torch.no_grad():
                 action_values = net_local(state)
             net_local.train()
-            return self.phases[np.argmax(action_values.cpu().data.numpy())]
+
+            action = np.argmax(action_values.cpu().data.numpy())
+            return self.phases[action]
         else:
             return self.phases[random.choice(np.arange(self.n_actions))]
 
@@ -84,7 +82,9 @@ class Learning_Agent(Agent):
         for road in self.out_roads:
             lanes = eng.get_road_lanes(road)
             for lane in lanes:
-                lanes_veh_num.append(lanes_count[lane])
+                length = self.out_lanes_length[lane]
+                lanes_veh_num.append(lanes_count[lane] * 5 / length)
+                # lanes_veh_num.append(lanes_count[lane])
         return lanes_veh_num
 
     def get_in_lanes_veh_num(self, eng, lanes_veh, vehs_distance):
@@ -93,7 +93,6 @@ class Learning_Agent(Agent):
         :param eng: the cityflow simulation engine
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        
         lanes_veh_num = []
         for road in self.in_roads:
             lanes = eng.get_road_lanes(road)
@@ -111,9 +110,13 @@ class Learning_Agent(Agent):
                     else:
                         seg3 +=1
      
-                lanes_veh_num.append(seg1)
-                lanes_veh_num.append(seg2)
-                lanes_veh_num.append(seg3)
+                lanes_veh_num.append(seg1 * (5 / (length/3)))
+                lanes_veh_num.append(seg2 * (5 / (length/3)))
+                lanes_veh_num.append(seg3 * (5 / (length/3)))
+                # lanes_veh_num.append(seg1)
+                # lanes_veh_num.append(seg2)
+                # lanes_veh_num.append(seg3)
+
 
         return lanes_veh_num
 

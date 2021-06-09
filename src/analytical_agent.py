@@ -33,10 +33,10 @@ class Analytical_Agent(Agent):
 
         self.update_clear_green_time(time)
         
-        self.stabilise(time)
-        if not self.action_queue.empty():
-            phase, green_time = self.action_queue.get()
-            return phase, int(np.ceil(green_time))
+        # self.stabilise(time)
+        # if not self.action_queue.empty():
+        #     phase, green_time = self.action_queue.get()
+        #     return phase, int(np.ceil(green_time))
 
         if all([x.green_time == 0 for x in self.movements.values()]):
                 return self.phase, 5

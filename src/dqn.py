@@ -8,7 +8,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 BUFFER_SIZE = int(1e5)  # replay buffer size
-GAMMA = 0.999           # discount factor
+# GAMMA = 0.999           # discount factor
+GAMMA = 0.8
 TAU = 1e-3              # for soft update of target parameters
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -44,7 +45,7 @@ class DQN(nn.Module):
         return self.fc3(x)
 
 
-def optimize_model(experiences, net_local, net_target, optimizer, gamma=GAMMA):
+def optimize_model(experiences, net_local, net_target, optimizer, gamma=GAMMA, tau=TAU):
     """Update value parameters using given batch of experience tuples.
 
     Params
@@ -59,21 +60,21 @@ def optimize_model(experiences, net_local, net_target, optimizer, gamma=GAMMA):
     net_local.train()
     net_target.eval()
     
-    #shape of output from the model (batch_size,action_dim) = (64,4)
     predicted_targets = net_local(states).gather(1,actions)
     
     with torch.no_grad():
         labels_next = net_target(next_state).detach().max(1)[0].unsqueeze(1)
 
     # .detach() ->  Returns a new Tensor, detached from the current graph.
+
     labels = rewards + (gamma * labels_next * (1-dones))
 
     loss = criterion(predicted_targets,labels).to(device)
     optimizer.zero_grad()
     loss.backward()
     
-    for param in net_local.parameters():
-        param.grad.data.clamp_(-1, 1)
+    # for param in net_local.parameters():
+    #     param.grad.data.clamp_(-1, 1)
     # torch.nn.utils.clip_grad.clip_grad_norm_(net_local.parameters(), 10)
 
     optimizer.step()
