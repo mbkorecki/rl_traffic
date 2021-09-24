@@ -17,6 +17,7 @@ from demand_agent import Demand_Agent
 from hybrid_agent import Hybrid_Agent
 from presslight_agent import Presslight_Agent
 from fixed_agent import Fixed_Agent
+from random_agent import Random_Agent
 
 # from policy_agent import DPGN, Policy_Agent
 
@@ -47,24 +48,22 @@ class Environment:
 
         self.agents = []
 
-        random.seed(2)
-
         self.agents_type = args.agents_type
         if self.agents_type == 'analytical':
             self.step = self.analytical_step
         elif self.agents_type == 'learning' or  self.agents_type == 'hybrid' or self.agents_type == 'presslight':
             self.step = self.learning_step
-        elif self.agents_type == 'demand' or self.agents_type == 'fixed':
+        elif self.agents_type == 'demand' or self.agents_type == 'fixed' or self.agents_type == 'random':
             self.step = self.demand_step
         # elif self.agents_type == 'policy':
         #     self.step = self.policy_step
         else:
-            raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/learning/demand/hybrid")  
+            raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/policy/learning/demand/hybrid")  
         
         agent_ids = [x for x in self.eng.get_intersection_ids() if not self.eng.is_intersection_virtual(x)]
         for agent_id in agent_ids:
             if self.agents_type == 'analytical':
-                new_agent = Analytical_Agent(self.eng, ID=agent_id)
+                new_agent = Analytical_Agent(self.eng, ID=agent_id, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
             elif self.agents_type == 'learning':
                 new_agent = Learning_Agent(self.eng, ID=agent_id, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
             elif self.agents_type == 'demand':
@@ -77,13 +76,18 @@ class Environment:
                 new_agent = Fixed_Agent(self.eng, ID=agent_id)
             # elif self.agents_type == 'policy':
             #     new_agent = Policy_Agent(self.eng, ID=agent_id, state_dim=n_states, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
-
+            elif self.agents_type == 'random':
+                new_agent = Random_Agent(self.eng, ID=agent_id)
             else:
                 raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/learning/demand/hybrid")  
 
 
             if len(new_agent.phases) <= 1:
-                new_agent.set_phase(self.eng, new_agent.phases[0])
+                keys = [x for x in new_agent.phases.keys()]
+                if keys == []:
+                    new_agent.set_phase(self.eng, new_agent.clearing_phase)
+                else:
+                    new_agent.set_phase(self.eng, new_agent.phases[0])
             else:
                 self.agents.append(new_agent)
 
@@ -92,12 +96,23 @@ class Environment:
         
         self.n_actions = len(self.agents[0].phases)
         self.n_states = n_states
-        
-        self.local_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
-        self.target_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
+
+        if args.load:
+            self.local_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
+            self.local_net.load_state_dict(torch.load(args.load, map_location=torch.device('cpu')))
+            self.local_net.eval()
+            
+            self.target_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
+            self.target_net.load_state_dict(torch.load(args.load, map_location=torch.device('cpu')))
+            self.target_net.eval()
+        else:
+            self.local_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
+            self.target_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
 
         self.optimizer = optim.Adam(self.local_net.parameters(), lr=args.lr, amsgrad=True)
         self.memory = ReplayMemory(self.n_actions, batch_size=args.batch_size)
+
+        self.policy_memory = []
 
         # self.seed = torch.manual_seed(2)
         # hidden_sizes = [128, 64]
@@ -105,9 +120,19 @@ class Environment:
         # self.pol_opt = Adam(self.logits_net.parameters(), lr=5e-4, amsgrad=True)
 
         # self.value_net = DPGN(sizes=[self.n_states]+hidden_sizes+[1])
-        # self.val_opt = Adam(self.logits_net.parameters(), lr=1e-3, amsgrad=True)
+        # self.val_opt = Adam(self.value_net.parameters(), lr=1e-3, amsgrad=True)
+
+
+        self.agents = [x for x in self.agents if all(x.in_lanes_length.values()) > 0]
+        self.agents = [x for x in self.agents if all(x.out_lanes_length.values()) > 0]
+
+        for agent in self.agents:
+            agent.init_neighbours(self.agents)
         
         print(len(self.agents))
+
+
+
         
     def analytical_step(self, time, done):
         """
@@ -118,18 +143,28 @@ class Environment:
         print(time)
         lane_vehs = self.eng.get_lane_vehicles()
         lanes_count = self.eng.get_lane_vehicle_count()
+        veh_distance = self.eng.get_vehicle_distance()
         waiting_vehs = None
-        
+
         for agent in self.agents:
-            agent.update_arr_dep_veh_num(lane_vehs)
+            
+            agent.update_arr_dep_veh_num(self.eng, lane_vehs)
+            
+            if time % (10 + agent.clearing_time) == 0:
+                agent.total_rewards += agent.get_reward(lanes_count)
+                agent.reward_count += 1
             if time % agent.action_freq == 0:
+                if agent.action_type == "reward":
+                    next_state = torch.FloatTensor(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance)).unsqueeze(0)
+                    self.memory.add(agent.state, agent.action.ID, 0, next_state, False)                    
+                    agent.action_type = "act"
+                                    
                 if agent.action_type == "act":
-                    agent.total_rewards += agent.get_reward(lanes_count)
-                    agent.reward_count += 1
                     agent.action, agent.green_time = agent.act(self.eng, time)
                
                     
                     if agent.phase.ID != agent.action.ID:
+                        agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
                         agent.update_wait_time(time, agent.action, agent.phase, lanes_count)
                         agent.set_phase(self.eng, agent.clearing_phase)
                         agent.action_freq = time + agent.clearing_time
@@ -142,7 +177,7 @@ class Environment:
                 elif agent.action_type == "update":
                     agent.set_phase(self.eng, agent.action)
                     agent.action_freq = time + agent.green_time
-                    agent.action_type = "act"
+                    agent.action_type = "reward"
 
         self.eng.next_step()
 
@@ -176,9 +211,11 @@ class Environment:
                 if agent.action_type == "act":
                     agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
                     agent.action = agent.act(self.local_net, agent.state, time, lanes_count, eps=self.eps)
+                    # agent.update_clear_green_time(time)
+                    # agent.green_time = max(5, int(np.max([agent.movements[x].green_time for x in agent.action.movements])))
                     agent.green_time = 10
                     
-                    if agent.action != agent.phase:
+                    if agent.action.ID != agent.phase.ID:
                         agent.update_wait_time(time, agent.action, agent.phase, lanes_count)
                         agent.set_phase(self.eng, agent.clearing_phase)
                         agent.action_type = "update"
@@ -248,6 +285,8 @@ class Environment:
     #             if agent.action_type == "reward":
     #                 reward = agent.get_reward(lanes_count)
     #                 agent.ep_rews.append(reward)
+    #                 agent.total_rewards += agent.get_reward(lanes_count)
+    #                 agent.reward_count += 1
     #                 agent.action_type = "act"
 
     #             if agent.action_type == "act":
@@ -255,6 +294,7 @@ class Environment:
     #                 agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
     #                 agent.batch_obs.append(agent.state.copy())
                     
+    #                 # agent.action = agent.act(torch.as_tensor(agent.state, dtype=torch.float32), agent.logits_net)
     #                 agent.action = agent.act(torch.as_tensor(agent.state, dtype=torch.float32), self.logits_net)
     #                 agent.batch_acts.append(agent.action.ID)
 
@@ -265,6 +305,7 @@ class Environment:
 
 
     #                 if agent.phase.ID != agent.action.ID:
+    #                     agent.update_wait_time(time, agent.action, agent.phase, lanes_count)
     #                     agent.set_phase(self.eng, agent.clearing_phase)
     #                     agent.action_freq = time + agent.clearing_time
     #                     agent.action_type = "update"
@@ -284,9 +325,10 @@ class Environment:
 
     #             if len(agent.ep_rews) > 1:
     #                 agent.batch_weights = agent.discount_cumsum(agent.ep_rews, agent.gamma)[:-1]
-
+                    
     #                 with torch.no_grad():
-    #                     value_loss = self.value_net(torch.from_numpy(np.asarray(agent.batch_obs)).float().unsqueeze(0))
+    #                     # value_loss = agent.value_net(torch.from_numpy(np.asarray(agent.batch_obs)).float().unsqueeze(0))
+    #                     value_loss = agent.value_net(torch.from_numpy(np.asarray(agent.batch_obs)).float().unsqueeze(0))
 
     #                 rews = np.asarray(agent.ep_rews[:-1]).reshape(np.asarray(agent.ep_rews[:-1]).shape[0], 1)
     #                 value_loss = value_loss.numpy()[0] + [0]
@@ -300,22 +342,35 @@ class Environment:
 
     #                 adv = (adv - adv.mean()) / adv.std()
 
+
+    #                 self.policy_memory = [(agent.batch_acts[:-1], agent.batch_obs[:-1], agent.batch_weights, adv)]
+                    
+    #                 self.act_memory = [item for sublist in self.policy_memory for item in sublist[0]]
+    #                 self.obs_memory = [item for sublist in self.policy_memory for item in sublist[1]]
+    #                 self.weight_memory = [item for sublist in self.policy_memory for item in sublist[2]]
+    #                 self.adv_memory = [item for sublist in self.policy_memory for item in sublist[3]]
+
+    #                 self.memory = [(act, obs, weight, adv) for act, obs, weight, adv in zip(self.act_memory, self.obs_memory, self.weight_memory, self.adv_memory)]
+    #                 random.shuffle(self.memory)
+    #                 self.act_memory, self.obs_memory, self.weight_memory, self.adv_memory = zip(*self.memory)
+
+    #                 # agent.pol_opt.zero_grad()
     #                 self.pol_opt.zero_grad()
-    #                 batch_loss = agent.compute_loss(obs=torch.as_tensor(agent.batch_obs, dtype=torch.float32),
-    #                                       act=torch.as_tensor(agent.batch_acts, dtype=torch.int32),
-    #                                       weights=torch.as_tensor(adv.copy(), dtype=torch.float32),
+    #                 batch_loss = agent.compute_loss(obs=torch.as_tensor(self.obs_memory, dtype=torch.float32),
+    #                                       act=torch.as_tensor(self.act_memory, dtype=torch.int32),
+    #                                       weights=torch.as_tensor(self.adv_memory, dtype=torch.float32),
     #                                       net=self.logits_net
     #                                       )
-    #                 print(batch_loss.item())
     #                 batch_loss.backward()
+    #                 # agent.pol_opt.step()
     #                 self.pol_opt.step()
 
-    #                 for t in range(1):
-    #                     self.val_opt.zero_grad()
-    #                     value_loss = ((self.value_net(torch.from_numpy(np.asarray(agent.batch_obs)).float().unsqueeze(0)) -
-    #                                    torch.from_numpy(np.asarray(agent.batch_weights).copy()).float().unsqueeze(0))**2).mean()
+    #                 for t in range(1):                        
+    #                     agent.val_opt.zero_grad()
+    #                     value_loss = ((agent.value_net(torch.from_numpy(np.asarray(self.obs_memory)).float().unsqueeze(0)) -
+    #                                    torch.from_numpy(np.asarray(self.weight_memory).copy()).float().unsqueeze(0))**2).mean()
     #                     value_loss.backward()
-    #                     self.val_opt.step()
+    #                     agent.val_opt.step()
 
     #                 agent.batch_obs = []          # for observations
     #                 agent.batch_acts = []         # for actions
@@ -330,10 +385,11 @@ class Environment:
         """
         resets the movements amd rewards for each agent and the simulation environment, should be called after each episode
         """
-        self.eng.reset(seed=False)
+        self.eng.reset(seed=True)
 
         for agent in self.agents:
             agent.reset_movements()
+            agent.action_freq = 10
             agent.total_rewards = 0
             agent.reward_count = 0
             agent.action_type = 'act'

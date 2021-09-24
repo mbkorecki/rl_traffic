@@ -29,7 +29,7 @@ def parse_args():
                         help="the number of episodes to run (one episosde consists of a full simulation run for num_sim_steps)"
                         )
     parser.add_argument("--num_sim_steps", default=1800, type=int, help="the number of simulation steps, one step corresponds to 1 second")
-    parser.add_argument("--agents_type", default='analytical', type=str, help="the type of agents learning/analytical/hybrid/demand")
+    parser.add_argument("--agents_type", default='analytical', type=str, help="the type of agents learning/policy/analytical/hybrid/demand")
 
     parser.add_argument("--update_freq", default=10, type=int,
                         help="the frequency of the updates (training pass) of the deep-q-network, default=10")
@@ -37,10 +37,12 @@ def parse_args():
     parser.add_argument("--lr", default=5e-4, type=float, help="the learning rate for the dqn, default=5e-4")
     parser.add_argument("--eps_start", default=1, type=float, help="the epsilon start")
     parser.add_argument("--eps_end", default=0.01, type=float, help="the epsilon decay")
-    # parser.add_argument("--eps_decay", default=0.95, type=float, help="the epsilon end")
+    # parser.add_argument("--eps_decay", default=0.95, type=float, help="the epsilon decay")
     parser.add_argument("--eps_decay", default=5e-5, type=float, help="the epsilon decay")
     parser.add_argument("--eps_update", default=1799, type=float, help="how frequently epsilon is decayed")
-
+    parser.add_argument("--load", default=None, type=str, help="path to the model to be loaed")
+    parser.add_argument("--mode", default='train', type=str, help="mode of the run train/test")
+    parser.add_argument("--replay", default=False, type=bool, help="saving replay")
 
     return parser.parse_args()
 
@@ -50,19 +52,32 @@ args = parse_args()
 logger = Logger(args)
 environ = Environment(args, n_actions=9, n_states=57)
 
+
+# for agent in environ.agents:
+#     for movement in agent.movements.values():
+#         print(movement.in_length, movement.out_length)
+
+
 num_episodes = args.num_episodes
 num_sim_steps = args.num_sim_steps
 
 step = 0
-
+best_time = 999999
+best_veh_count = 0
+best_reward = 0
+saved_model = None
+environ.best_epoch = 0
+    
 environ.eng.set_save_replay(open=False)
 environ.eng.set_random_seed(2)
+random.seed(2)
+np.random.seed(2)
 
 log_phases = False
 
 for i_episode in range(num_episodes):
     logger.losses = []
-    if i_episode == num_episodes-1:
+    if i_episode == num_episodes-1 and args.replay:
         environ.eng.set_save_replay(open=True)
         environ.eng.set_replay_file(logger.log_path.split('/')[0] + "/../" + logger.log_path.split('/')[1] + "/replay_file.txt")
     
@@ -79,24 +94,41 @@ for i_episode in range(num_episodes):
         t += 1
       
         step = (step+1) % environ.update_freq
-        if (environ.agents_type == 'learning' or environ.agents_type == 'hybrid') and step == 0:
+        if args.mode == 'train' and (environ.agents_type == 'learning' or environ.agents_type == 'hybrid') and step == 0:
             if len(environ.memory)>environ.batch_size:
                 experience = environ.memory.sample()
                 logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer))
-        if environ.agents_type == 'presslight' and step == 0:
+        if args.mode == 'train' and environ.agents_type == 'presslight' and step == 0:
             if len(environ.memory)>environ.batch_size:
                 experience = environ.memory.sample()
                 logger.losses.append(optimize_model(experience, environ.local_net, environ.target_net, environ.optimizer, tau=1))
 
-            
+
+    if environ.eng.get_average_travel_time() < best_time:
+        best_time = environ.eng.get_average_travel_time()
+        logger.save_models(environ, flag=False)
+        environ.best_epoch = i_episode
                 
+    if environ.eng.get_finished_vehicle_count() > best_veh_count:
+        best_veh_count = environ.eng.get_finished_vehicle_count()
+        logger.save_models(environ, flag=True)
+        environ.best_epoch = i_episode
+    
     logger.log_measures(environ)
     print(logger.reward, environ.eng.get_average_travel_time(), environ.eng.get_finished_vehicle_count())
 
 
+# for agent in environ.agents:
+#     for move in agent.movements.values():
+#         print(move.get_arr_veh_num(0, args.num_sim_steps), move.get_dep_veh_num(0, args.num_sim_steps))
+    
 logger.save_log_file(environ)
 logger.serialise_data(environ)
 
-if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight':
+if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight' or environ.agents_type == 'policy':
     logger.save_measures_plots()
-    logger.save_models(environ)
+#     logger.save_models(environ)
+
+
+
+

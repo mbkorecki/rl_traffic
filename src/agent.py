@@ -1,5 +1,6 @@
 from intersection import Movement, Phase
 import numpy as np
+import random
 
 class Agent:
     """
@@ -19,8 +20,6 @@ class Agent:
         self.total_rewards = 0
         self.reward_count = 0
         
-        self.action = 0
-        self.phase = Phase(ID="")
 
         self.action_freq = 10
         self.action_type = "act"
@@ -28,6 +27,11 @@ class Agent:
 
         self.init_movements(eng)
         self.init_phases(eng)
+
+        random.seed(2)
+        self.phase = Phase(ID=random.choice(list(self.phases.keys())))
+        self.action = self.phase 
+
 
         self.in_lanes = [x.in_lanes for x in self.movements.values()]
         self.in_lanes = set([x for sublist in self.in_lanes for x in sublist])
@@ -53,14 +57,16 @@ class Agent:
             out_lanes = [x[1] for x in lanes]
 
             for lane, length in eng.get_road_lanes_length(in_road):
-                lane_length = length
+                lane_length = length                    
                 self.in_lanes_length.update({lane : length})
                 
             for lane, length in eng.get_road_lanes_length(out_road):
                 out_lane_length = length
                 self.out_lanes_length.update({lane : length})
-                
-            new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length, out_lane_length, clearing_time=self.clearing_time)
+
+            max_in_speed = eng.get_road_max_speed(in_road)
+            max_out_speed = eng.get_road_max_speed(out_road)
+            new_movement = Movement(idx, in_road, out_road, in_lanes, out_lanes, lane_length, out_lane_length, max_in_speed, max_out_speed, clearing_time=self.clearing_time)
             self.movements.update({roadlink[0] : new_movement})
             
     def init_phases(self, eng):
@@ -72,7 +78,7 @@ class Agent:
             phases = phase_tuple[0]
             types = phase_tuple[1]
             empty_phases = []
-            
+                
             new_phase_moves = []
             for move, move_type in zip(phases, types):
                 key = tuple(move)
@@ -93,7 +99,7 @@ class Agent:
                 self.clearing_phase = Phase(empty_phases[0], [])
                 self.phases.update({empty_phases[0] : self.clearing_phase})
             
-        self.phase = self.clearing_phase
+        # self.phase = self.clearing_phase
         temp_moves = dict(self.movements)
         self.movements.clear()
         for move in temp_moves.values():
@@ -106,6 +112,31 @@ class Agent:
                     self.movements[move].phases.append(phase.ID)
 
         
+    def init_neighbours(self, agents):
+        self.neighbours = []
+        self.neighbours_lanes_dict = {}
+        for agent in agents:
+            if agent.ID != self.ID and agent.ID not in [x.ID for x in self.neighbours]:
+                for lane in self.in_lanes:
+                    if lane in agent.out_lanes:
+                        if agent not in self.neighbours:
+                            self.neighbours.append(agent)
+                        if agent.ID not in self.neighbours_lanes_dict.keys():
+                            self.neighbours_lanes_dict.update({agent.ID : [lane]})
+                        else:
+                            self.neighbours_lanes_dict[agent.ID].append(lane)
+
+            if agent.ID != self.ID and agent.ID not in [x.ID for x in self.neighbours]:
+                for lane in self.out_lanes:
+                    if lane in agent.in_lanes:
+                        if lane in agent.out_lanes:
+                            if agent not in self.neighbours:
+                                self.neighbours.append(agent)
+                            if agent.ID not in self.neighbours_lanes_dict.keys():
+                                self.neighbours_lanes_dict.update({agent.ID : [lane]})
+                            else:
+                                self.neighbours_lanes_dict[agent.ID].append(lane)                        
+                
 
     def set_phase(self, eng, phase):
         """
@@ -116,6 +147,18 @@ class Agent:
         eng.set_tl_phase(self.ID, phase.ID)
         self.phase = phase
 
+        
+    def observe(self, eng, time, lanes_count, lane_vehs, vehs_distance):
+        """
+        generates the observations made by the agents
+        :param eng: the cityflow simulation engine
+        :param time: the time of the simulation
+        :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
+        """
+        observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count)
+        return observations
+
+        
     def get_reward(self, lanes_count):
         """
         gets the reward of the agent in the form of pressure
@@ -132,16 +175,27 @@ class Agent:
 
         # sum_wt = max(1, np.sum([x.waiting_time for x in self.movements.values()])
         
-        return -np.abs(np.sum([x.get_pressure(lanes_count) for x in self.movements.values()]))
+        # return -np.abs(np.sum([x.get_pressure(lanes_count) for x in self.movements.values()]))
 
+        self_pressure = -np.abs(np.sum([x.get_pressure(lanes_count) for x in self.movements.values()]))
+        # neighbour_pressure = []
+        # for neighbour in self.neighbours:
+        #     neighbour_pressure.append(-np.abs(np.sum([x.get_pressure(lanes_count) for x in neighbour.movements.values()
+        #                                               if  bool(set(self.neighbours_lanes_dict[neighbour.ID]) & set(x.in_lanes).union(set(x.out_lanes)))
+        #                                               ]
+        #                                              )
+        #                                       )
+        #                               )
+        # return (self_pressure + np.mean(neighbour_pressure)) / 2
+        return self_pressure
     
-    def update_arr_dep_veh_num(self, lanes_vehs):
+    def update_arr_dep_veh_num(self, eng, lanes_vehs):
         """
         Updates the list containing the number vehicles that arrived and departed
         :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
         """
         for movement in self.movements.values():
-            movement.update_arr_dep_veh_num(lanes_vehs)
+            movement.update_arr_dep_veh_num(eng, lanes_vehs, self.action)
 
 
     def update_wait_time(self, time, action, phase, lanes_count):

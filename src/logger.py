@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 import random
 import pickle
+import dill
 
 class Logger:
     """
@@ -27,6 +28,11 @@ class Logger:
         self.reward = 0
 
         self.log_path = "../" + args.sim_config.split('/')[2] +'_' + 'config' + args.sim_config.split('/')[3].split('.')[0] + '_' + str(args.agents_type)
+
+        if args.load != None:
+            self.log_path += "_load"
+            
+        
         old_path = self.log_path
         i = 1
 
@@ -64,6 +70,10 @@ class Logger:
             for move in agent.movements.values():
                 waiting_time_dict[agent.ID].update({move.ID : (move.max_waiting_time, move.waiting_time_list)})
 
+
+        with open(self.log_path + "/" + "memory.dill", "wb") as f:
+            dill.dump(environ.memory.memory, f)
+
         with open(self.log_path + "/" + "waiting_time.pickle", "wb") as f:
             pickle.dump(waiting_time_dict, f)
             
@@ -71,7 +81,7 @@ class Logger:
             pickle.dump(reward_dict, f) 
 
 
-        if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight':
+        if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight' or environ.agents_type == 'policy':
             with open(self.log_path + "/" + "episode_rewards.pickle", "wb") as f:
                 pickle.dump(self.plot_rewards, f)
 
@@ -100,10 +110,15 @@ class Logger:
         log_file.write("\n")
         log_file.write(str(self.args.lr))
         log_file.write("\n")
-
+        
         log_file.write("mean vehicle count: " + str(np.mean(self.veh_count[self.args.num_episodes-10:])) + " with sd: " + str(np.std(self.veh_count[self.args.num_episodes-10:])) +
-                       "\nmean travel time: " + str(np.mean(self.travel_time[self.args.num_episodes-10:])) + " with sd: " + str(np.std(self.travel_time[self.args.num_episodes-10:]
-                        )))
+                       "\nmean travel time: " + str(np.mean(self.travel_time[self.args.num_episodes-10:])) +
+                       " with sd: " + str(np.std(self.travel_time[self.args.num_episodes-10:])) +
+                       "\nmax vehicle time: " + str(np.max(self.veh_count)) +
+                       "\nmin travel time: " + str(np.min(self.travel_time))
+                       )
+        log_file.write("\n")
+        log_file.write("best epoch: " + str(environ.best_epoch))
         log_file.write("\n")
         log_file.write("\n")
 
@@ -175,11 +190,14 @@ class Logger:
         plt.clf()
 
 
-    def save_models(self, environ):
+    def save_models(self, environ, flag):
         """
         Saves machine learning models (for now just neural networks)
         :param environ: the environment in which the model was run
         """
-        torch.save(environ.local_net.state_dict(), self.log_path + '/q_net.pt')
-        torch.save(environ.target_net.state_dict(), self.log_path + '/target_net.pt')
-
+        if flag:
+            torch.save(environ.local_net.state_dict(), self.log_path + '/throughput_q_net.pt')
+            torch.save(environ.target_net.state_dict(), self.log_path + '/throughput_target_net.pt')
+        else: 
+            torch.save(environ.local_net.state_dict(), self.log_path + '/time_q_net.pt')
+            torch.save(environ.target_net.state_dict(), self.log_path + '/time_target_net.pt')

@@ -52,12 +52,13 @@ class Presslight_Agent(Learning_Agent):
                 seg3 = 0
                 vehs = lanes_veh[lane]
                 for veh in vehs:
-                    if vehs_distance[veh] / length >= 0.66:
-                        seg1 += 1
-                    elif vehs_distance[veh] / length >= 0.33:
-                        seg2 += 1
-                    else:
-                        seg3 +=1
+                    if veh in vehs_distance.keys():
+                        if vehs_distance[veh] / length >= 0.66:
+                            seg1 += 1
+                        elif vehs_distance[veh] / length >= 0.33:
+                            seg2 += 1
+                        else:
+                            seg3 +=1
      
                 lanes_veh_num.append(seg1)
                 lanes_veh_num.append(seg2)

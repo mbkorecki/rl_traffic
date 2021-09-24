@@ -13,7 +13,7 @@ class Hybrid_Agent(Learning_Agent):
     def __init__(self, eng, ID='', in_roads=[], out_roads=[]):
         super().__init__(eng, ID, in_roads, out_roads)
         self.action_queue = queue.Queue()
-
+        
     def act(self, net_local, state, time, lanes_count, eps = 0):
         """
         generates the action to be taken by the agent
@@ -26,7 +26,7 @@ class Hybrid_Agent(Learning_Agent):
         # if not self.action_queue.empty():
         #     phase = self.action_queue.get()
         #     return phase
-        
+    
         if random.random() > eps:
             state = torch.from_numpy(state).float().unsqueeze(0).to(device)
             net_local.eval()
@@ -59,7 +59,7 @@ class Hybrid_Agent(Learning_Agent):
                 return action
             else:
                 #explore randomly
-                return self.phases[random.choice(np.arange(self.n_actions))]
+                return self.phases[random.choice(list(self.phases.keys()))]
 
 
 
@@ -106,3 +106,7 @@ class Hybrid_Agent(Learning_Agent):
             
         add_phase_to_queue(priority_list)
      
+ 
+
+
+    

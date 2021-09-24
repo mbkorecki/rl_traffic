@@ -14,7 +14,6 @@ TAU = 1e-3              # for soft update of target parameters
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
 class DQN(nn.Module):
     """ Actor (Policy) Model."""
     def __init__(self, state_size, action_size, seed=2, fc1_unit=128,
@@ -113,7 +112,6 @@ class ReplayMemory:
             batch_size (int): size of each training batch
             seed (int): random seed
         """
-        
         self.action_size = action_size
         self.memory = deque(maxlen=buffer_size)
         self.batch_size = batch_size
@@ -122,7 +120,7 @@ class ReplayMemory:
                                                                "reward",
                                                                "next_state",
                                                                "done"])
-        self.seed = random.seed(seed)
+        random.seed(seed)
         
     def add(self,state, action, reward, next_state,done):
         """Add a new experience to memory."""

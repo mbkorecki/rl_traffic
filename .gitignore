@@ -6,7 +6,11 @@ replayFile.txt
 __pycache__/
 *.py[cod]
 *$py.class
+results*/
+*results*/
+**/memory.dill
 results*
+*results*
 
 # C extensions
 *.so

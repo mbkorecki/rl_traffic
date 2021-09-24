@@ -39,13 +39,14 @@ class Policy_Agent(Agent):
         self.init_phases_vectors(eng)
         self.n_actions = len(self.phases)
 
-        # hidden_sizes = [128, 64]
-        # self.seed = torch.manual_seed(2)
+        hidden_sizes = [128, 64]
+        self.seed = torch.manual_seed(2)
+        
         # self.logits_net = DPGN(sizes=[state_dim]+hidden_sizes+[self.n_actions])
         # self.pol_opt = Adam(self.logits_net.parameters(), lr=5e-4, amsgrad=True)
 
-        # self.value_net = DPGN(sizes=[state_dim]+hidden_sizes+[1])
-        # self.val_opt = Adam(self.logits_net.parameters(), lr=1e-3, amsgrad=True)
+        self.value_net = DPGN(sizes=[state_dim]+hidden_sizes+[1])
+        self.val_opt = Adam(self.value_net.parameters(), lr=1e-3, amsgrad=True)
 
 
         self.batch_obs = []          # for observations
@@ -54,6 +55,7 @@ class Policy_Agent(Agent):
 
         self.ep_rews = []            # list for rewards accrued throughout ep
 
+        
         self.gamma = 0.98
         self.lam = 0.95
         
@@ -115,7 +117,7 @@ class Policy_Agent(Agent):
 
     def compute_loss(self, obs, act, weights, net):
         logp = self.get_policy(obs, net).log_prob(act)
-        return -(logp[:-1] * weights.reshape(weights.shape[0],)).mean()
+        return -(logp * weights.reshape(weights.shape[0],)).mean()
     
     def get_out_lanes_veh_num(self, eng, lanes_count):
         """

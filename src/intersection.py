@@ -5,7 +5,7 @@ class Movement:
     """
     The class defining a Movement on an intersection, a Movement of vehicles from incoming road -> outgoing road
     """
-    def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, in_length, out_length, clearing_time=2, phases=[]):
+    def __init__(self, ID, in_road, out_road, in_lanes, out_lanes, in_length, out_length, max_in_speed, max_out_speed, clearing_time=2, phases=[]):
         """
         initialises the Movement, the movement has a type 1, 2 or 3
         1 -> turn right, 2 -> turn left, 3 -> go straight
@@ -15,7 +15,7 @@ class Movement:
         :param in_lanes: the incoming lanes of the movement
         :param out_lanes: the outgoing lanes of the movement
         :param lane_length: the length of the incoming lane (if there is more than one incoming lane we assume they have the same length)
-        :param phases: the indices of phases for which the give movement is enabled
+        :param phases: the indices of phases for which the given movement is enabled
         """
         self.ID = ID
         
@@ -34,8 +34,10 @@ class Movement:
         self.dep_vehs_num = []
 
         self.move_type = None 
-        self.max_saturation = 2.2
-        self.max_speed = 11
+        self.max_speed = int(max_in_speed)
+        self.car_length = 5
+        
+        self.max_saturation = max_in_speed / self.car_length
         self.pass_time = int(np.ceil(self.in_length / self.max_speed))
 
 
@@ -49,6 +51,9 @@ class Movement:
         self.priority = 0
         self.last_on_time = 0
 
+        self.in_vehs_ids = {}
+        self.out_vehs_ids = {}
+        
     def update_wait_time(self, time, action, phase, lanes_count):
         """
         Updates movement's waiting time - the time a given movement has waited to be enabled
@@ -92,19 +97,44 @@ class Movement:
         """
         return np.sum(self.arr_vehs_num[start_time: end_time])
 
-    def update_arr_dep_veh_num(self, lanes_vehs):
+    def update_arr_dep_veh_num(self, eng, lanes_vehs, current_phase):
         """
         Updates the list containing the number vehicles that arrived and departed
         :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
         """
-        current_vehs = set()
+        # arr_vehs_num = 0
+        # dep_vehs_num = 0
+        # for lane in self.in_lanes:
+        #     for ID in eng.get_vehs_between_distances(lane, 0, self.max_speed):
+        #         if ID not in self.in_vehs_ids.keys():
+        #             self.in_vehs_ids.update({ID : 1})
+        #             arr_vehs_num += 1
 
+        # for lane in self.out_lanes:
+        #     if current_phase.ID in self.phases:
+        #         for ID in eng.get_vehs_between_distances(lane, self.out_length-self.max_speed, self.out_length):
+        #             if ID not in self.out_vehs_ids.keys():
+        #                 self.out_vehs_ids.update({ID : 1})
+        #                 dep_vehs_num += 1
+            
+        # self.dep_vehs_num.append(dep_vehs_num)
+        # self.arr_vehs_num.append(arr_vehs_num)
+        current_vehs = set()
+        
         for lane in self.in_lanes:
             current_vehs.update(lanes_vehs[lane])
 
-        dep_vehs = len(self.prev_vehs - current_vehs)  
+            
+        # if current_phase.ID in self.phases:
+        #     dep_vehs = len(self.prev_vehs - current_vehs)
+        # else:
+        #     dep_vehs = 0
+        dep_vehs = len(self.prev_vehs - current_vehs)
+        # dep_vehs = len([x for x in self.prev_vehs if x not in current_vehs])
+        # dep_vehs = len(self.prev_vehs.difference(current_vehs))
+        
         self.dep_vehs_num.append(dep_vehs)
-        self.arr_vehs_num.append(len(current_vehs) - (len(self.prev_vehs) - dep_vehs))
+        self.arr_vehs_num.append(len(current_vehs) - (len(self.prev_vehs) - dep_vehs))        
         self.prev_vehs = current_vehs
 
         
@@ -137,7 +167,6 @@ class Movement:
         :param current_movements: a list of movements that are currently enabled
         :returns: the predicted green time of the movement
         """
-        
         self.arr_rate = self.get_arr_veh_num(0, time) / time
         dep = self.get_dep_veh_num(0, time)
 

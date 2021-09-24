@@ -41,16 +41,6 @@ class Learning_Agent(Agent):
                 vec[idx-1] = 1
             phase.vector = vec.tolist()
             idx+=1    
-    
-    def observe(self, eng, time, lanes_count, lane_vehs, vehs_distance):
-        """
-        generates the observations made by the agents
-        :param eng: the cityflow simulation engine
-        :param time: the time of the simulation
-        :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
-        """
-        observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count)
-        return observations
 
     def act(self, net_local, state, lanes_count, time, eps = 0):
         """
@@ -103,12 +93,13 @@ class Learning_Agent(Agent):
                 seg3 = 0
                 vehs = lanes_veh[lane]
                 for veh in vehs:
-                    if vehs_distance[veh] / length >= 0.66:
-                        seg1 += 1
-                    elif vehs_distance[veh] / length >= 0.33:
-                        seg2 += 1
-                    else:
-                        seg3 +=1
+                    if veh in vehs_distance.keys():
+                        if vehs_distance[veh] / length >= 0.66:
+                            seg1 += 1
+                        elif vehs_distance[veh] / length >= 0.33:
+                            seg2 += 1
+                        else:
+                            seg3 +=1
      
                 lanes_veh_num.append(seg1 * (5 / (length/3)))
                 lanes_veh_num.append(seg2 * (5 / (length/3)))

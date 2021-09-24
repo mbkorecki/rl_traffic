@@ -52,7 +52,7 @@ class Fixed_Agent(Agent):
     
 
     def act(self, lanes_count):
-        phaseID = ((self.phase.ID) % len(self.phases))
-        phaseID += 1
-        return self.phases[phaseID]
+        phaseID = ((self.phase.ID + 1) % len(self.phases))
+        keys = [x for x in self.phases.keys()]
+        return self.phases[keys[phaseID]]
       
