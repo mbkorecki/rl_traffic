@@ -20,6 +20,11 @@ def parse_args():
 
 
 
+"""
+an array of helper functions for modifying/disrupting the flow, vehicles speeds and network topology as well as drawing the network
+"""
+
+
 args = parse_args()
 
 num_points = [0, 1, 2, 3, 4, 5]
@@ -35,7 +40,6 @@ def disrupt_veh_speed(args):
         
         for vehicle in data:
             vehicle['vehicle']['maxSpeed'] =  stats.truncnorm.rvs((lower - mu) / sigma, (upper - mu) / sigma, loc=15, scale=5)
-            # print(vehicle['vehicle']['maxSpeed'])
 
     with open(args.dir + "flow_m.json", "w") as flow_file:
         json.dump(data, flow_file)
@@ -163,9 +167,6 @@ def get_flow_rates(args):
     for i in range(length):
         arr_rate[i] = np.sum(vehs_time_array[0:i+1]) / (i+1)
 
-    # print(np.mean(arr_rate), np.var(arr_rate))
-    # print(starting_points.keys(), len(starting_points.keys()))
-
     arr_points_sum = []
     for val in starting_points.values():
         print(np.sum(val), np.mean(val), np.var(val))
@@ -174,8 +175,3 @@ def get_flow_rates(args):
     print(np.mean(arr_points_sum), np.var(arr_points_sum))
     print(np.sum(vehs_time_array), np.mean(vehs_time_array), np.var(vehs_time_array))
 
-get_flow_rates(args)
-# get_road_lengths(args) 
-# draw_tikzpicture(args)            
-# disrupt_veh_speed(args)
-# disrupt_road_topology(args)

@@ -37,7 +37,6 @@ def parse_args():
     parser.add_argument("--lr", default=5e-4, type=float, help="the learning rate for the dqn, default=5e-4")
     parser.add_argument("--eps_start", default=1, type=float, help="the epsilon start")
     parser.add_argument("--eps_end", default=0.01, type=float, help="the epsilon decay")
-    # parser.add_argument("--eps_decay", default=0.95, type=float, help="the epsilon decay")
     parser.add_argument("--eps_decay", default=5e-5, type=float, help="the epsilon decay")
     parser.add_argument("--eps_update", default=1799, type=float, help="how frequently epsilon is decayed")
     parser.add_argument("--load", default=None, type=str, help="path to the model to be loaed")
@@ -51,11 +50,6 @@ def parse_args():
 args = parse_args()
 logger = Logger(args)
 environ = Environment(args, n_actions=9, n_states=57)
-
-
-# for agent in environ.agents:
-#     for movement in agent.movements.values():
-#         print(movement.in_length, movement.out_length)
 
 
 num_episodes = args.num_episodes
@@ -117,11 +111,7 @@ for i_episode in range(num_episodes):
     logger.log_measures(environ)
     print(logger.reward, environ.eng.get_average_travel_time(), environ.eng.get_finished_vehicle_count())
 
-
-# for agent in environ.agents:
-#     for move in agent.movements.values():
-#         print(move.get_arr_veh_num(0, args.num_sim_steps), move.get_dep_veh_num(0, args.num_sim_steps))
-    
+  
 logger.save_log_file(environ)
 logger.serialise_data(environ)
 logger.plot_pressure(environ)
@@ -129,7 +119,6 @@ logger.plot_pressure(environ)
 
 if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight' or environ.agents_type == 'policy':
     logger.save_measures_plots()
-#     logger.save_models(environ)
 
 
 

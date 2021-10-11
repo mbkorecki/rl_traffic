@@ -164,10 +164,6 @@ class Analytical_Agent(Agent):
                 lanes_veh_num.append(seg1 * (5 / (length/3)))
                 lanes_veh_num.append(seg2 * (5 / (length/3)))
                 lanes_veh_num.append(seg3 * (5 / (length/3)))
-                # lanes_veh_num.append(seg1)
-                # lanes_veh_num.append(seg2)
-                # lanes_veh_num.append(seg3)
-
 
         return lanes_veh_num
 

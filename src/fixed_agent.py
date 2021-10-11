@@ -2,8 +2,14 @@ from intersection import Movement, Phase
 from agent import Agent
 
 class Fixed_Agent(Agent):
-
+    """
+    The fixed agent rotating over all possible phases cyclically
+    """
     def __init__(self, eng, ID=''):
+        """
+        initialises the Fixed Agent, which rotates over all possible phases cyclically
+        :param ID: the unique ID of the agent corresponding to the ID of the intersection it represents 
+        """
         super().__init__(eng, ID)
 
 
@@ -52,6 +58,10 @@ class Fixed_Agent(Agent):
     
 
     def act(self, lanes_count):
+        """
+        selects the next phase
+        :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
+        """
         phaseID = ((self.phase.ID + 1) % len(self.phases))
         keys = [x for x in self.phases.keys()]
         return self.phases[keys[phaseID]]

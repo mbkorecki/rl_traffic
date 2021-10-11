@@ -41,6 +41,7 @@ class Presslight_Agent(Learning_Agent):
         gets the number of vehicles on the incoming lanes of the intersection
         :param eng: the cityflow simulation engine
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
+        :param vehs_distance: dictionary with vehicle ids as keys and their distance on their current lane as value
         """
         lanes_veh_num = []
         for road in self.in_roads:

@@ -194,6 +194,7 @@ class Logger:
         """
         Saves machine learning models (for now just neural networks)
         :param environ: the environment in which the model was run
+        :param flag: the flag indicating which model to save - throughput based or avg. travel time based
         """
         if flag:
             torch.save(environ.local_net.state_dict(), self.log_path + '/throughput_q_net.pt')
@@ -204,6 +205,10 @@ class Logger:
 
 
     def plot_pressure(self, environ):
+        """
+        plots pressure as a function of time, both avg pressure of all intersections and individual pressure
+        :param environ: the environment, after some simulation steps
+        """
         plot_avg = []
         plot_std = []
         for data in environ.log_pressure:

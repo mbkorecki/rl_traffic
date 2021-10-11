@@ -101,37 +101,14 @@ class Movement:
         """
         Updates the list containing the number vehicles that arrived and departed
         :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
+        :param current_phase: the current phase of the intersection
         """
-        # arr_vehs_num = 0
-        # dep_vehs_num = 0
-        # for lane in self.in_lanes:
-        #     for ID in eng.get_vehs_between_distances(lane, 0, self.max_speed):
-        #         if ID not in self.in_vehs_ids.keys():
-        #             self.in_vehs_ids.update({ID : 1})
-        #             arr_vehs_num += 1
-
-        # for lane in self.out_lanes:
-        #     if current_phase.ID in self.phases:
-        #         for ID in eng.get_vehs_between_distances(lane, self.out_length-self.max_speed, self.out_length):
-        #             if ID not in self.out_vehs_ids.keys():
-        #                 self.out_vehs_ids.update({ID : 1})
-        #                 dep_vehs_num += 1
-            
-        # self.dep_vehs_num.append(dep_vehs_num)
-        # self.arr_vehs_num.append(arr_vehs_num)
         current_vehs = set()
         
         for lane in self.in_lanes:
             current_vehs.update(lanes_vehs[lane])
 
-            
-        # if current_phase.ID in self.phases:
-        #     dep_vehs = len(self.prev_vehs - current_vehs)
-        # else:
-        #     dep_vehs = 0
         dep_vehs = len(self.prev_vehs - current_vehs)
-        # dep_vehs = len([x for x in self.prev_vehs if x not in current_vehs])
-        # dep_vehs = len(self.prev_vehs.difference(current_vehs))
         
         self.dep_vehs_num.append(dep_vehs)
         self.arr_vehs_num.append(len(current_vehs) - (len(self.prev_vehs) - dep_vehs))        

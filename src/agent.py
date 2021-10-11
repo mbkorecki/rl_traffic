@@ -99,7 +99,6 @@ class Agent:
                 self.clearing_phase = Phase(empty_phases[0], [])
                 self.phases.update({empty_phases[0] : self.clearing_phase})
             
-        # self.phase = self.clearing_phase
         temp_moves = dict(self.movements)
         self.movements.clear()
         for move in temp_moves.values():
@@ -113,6 +112,10 @@ class Agent:
 
         
     def init_neighbours(self, agents):
+        """
+        initiates the self.neighbours list of the agent, making it possible for it to access its neighbours 
+        :param agents: the list of all agents in the simulation
+        """
         self.neighbours = []
         self.neighbours_lanes_dict = {}
         for agent in agents:
@@ -154,6 +157,8 @@ class Agent:
         :param eng: the cityflow simulation engine
         :param time: the time of the simulation
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
+        :param lanes_vehs: a dictionary with lane ids as keys and list of vehicle ids as values
+        :param vehs_distance: dictionary with vehicle ids as keys and their distance on their current lane as value
         """
         observations = self.phase.vector + self.get_in_lanes_veh_num(eng, lane_vehs, vehs_distance) + self.get_out_lanes_veh_num(eng, lanes_count)
         return observations
@@ -164,29 +169,7 @@ class Agent:
         gets the reward of the agent in the form of pressure
         :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
-        # pressure = 0
-        # for x in self.movements.values():
-        #     pressure += np.sum([lanes_count[lane] / int(self.in_lanes_length[lane]/5) for lane in x.in_lanes]) - np.sum([lanes_count[lane] / int(self.in_lanes_length[lane]/5) for lane in x.out_lanes])
-        # return -np.abs(pressure)
-    
-        # return -np.abs(np.sum([lanes_count[x] / int(self.in_lanes_length[x]/5) for x in self.in_lanes])
-        #                -np.sum([lanes_count[x] / int(self.out_lanes_length[x]/5) for x in self.out_lanes]))
-
-
-        # sum_wt = max(1, np.sum([x.waiting_time for x in self.movements.values()])
-        
-        # return -np.abs(np.sum([x.get_pressure(lanes_count) for x in self.movements.values()]))
-
         self_pressure = -np.abs(np.sum([x.get_pressure(lanes_count) for x in self.movements.values()]))
-        # neighbour_pressure = []
-        # for neighbour in self.neighbours:
-        #     neighbour_pressure.append(-np.abs(np.sum([x.get_pressure(lanes_count) for x in neighbour.movements.values()
-        #                                               if  bool(set(self.neighbours_lanes_dict[neighbour.ID]) & set(x.in_lanes).union(set(x.out_lanes)))
-        #                                               ]
-        #                                              )
-        #                                       )
-        #                               )
-        # return (self_pressure + np.mean(neighbour_pressure)) / 2
         return self_pressure
     
     def update_arr_dep_veh_num(self, eng, lanes_vehs):
@@ -204,6 +187,7 @@ class Agent:
         :parama time: the current time
         :param action: the phase to be chosen for the intersection in this time step
         :param phase: the phase at the intersection up till this time step
+        :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         """
         for movement in self.movements.values():
             movement.update_wait_time(time, action, phase, lanes_count)

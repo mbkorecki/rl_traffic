@@ -11,7 +11,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class Learning_Agent(Agent):
     """
-    The class defining an agent which controls the traffic lights using reinforcement learning approach called PressureLight
+    Generic class defining an agent which controls the traffic lights using reinforcement learning
     """
     def __init__(self, eng, ID='', in_roads=[], out_roads=[]):
         """
@@ -47,6 +47,7 @@ class Learning_Agent(Agent):
         generates the action to be taken by the agent
         :param net_local: the neural network used in the decision making process
         :param state: the current state of the intersection, given by observe
+        :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
         :param eps: the epsilon value used in the epsilon greedy learing
         """
         if random.random() > eps:
@@ -81,7 +82,8 @@ class Learning_Agent(Agent):
         """
         gets the number of vehicles on the incoming lanes of the intersection
         :param eng: the cityflow simulation engine
-        :param lanes_count: a dictionary with lane ids as keys and vehicle count as values
+        :param lanes_veh: a dictionary with lane ids as keys and list of vehicle ids as values
+        :param vehs_distance: dictionary with vehicle ids as keys and their distance on their current lane as value
         """
         lanes_veh_num = []
         for road in self.in_roads:
@@ -104,9 +106,6 @@ class Learning_Agent(Agent):
                 lanes_veh_num.append(seg1 * (5 / (length/3)))
                 lanes_veh_num.append(seg2 * (5 / (length/3)))
                 lanes_veh_num.append(seg3 * (5 / (length/3)))
-                # lanes_veh_num.append(seg1)
-                # lanes_veh_num.append(seg2)
-                # lanes_veh_num.append(seg3)
 
 
         return lanes_veh_num

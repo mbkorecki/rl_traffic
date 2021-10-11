@@ -19,8 +19,6 @@ from presslight_agent import Presslight_Agent
 from fixed_agent import Fixed_Agent
 from random_agent import Random_Agent
 
-# from policy_agent import DPGN, Policy_Agent
-
 class Environment:
     """
     The class Environment represents the environment in which the agents operate in this case it is a city
@@ -55,8 +53,6 @@ class Environment:
             self.step = self.learning_step
         elif self.agents_type == 'demand' or self.agents_type == 'fixed' or self.agents_type == 'random':
             self.step = self.demand_step
-        # elif self.agents_type == 'policy':
-        #     self.step = self.policy_step
         else:
             raise Exception("The specified agent type:", args.agents_type, "is incorrect, choose from: analytical/policy/learning/demand/hybrid")  
         
@@ -206,9 +202,7 @@ class Environment:
                                     
                 if agent.action_type == "act":
                     agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
-                    agent.action = agent.act(self.local_net, agent.state, time, lanes_count, eps=self.eps)
-                    # agent.update_clear_green_time(time)
-                    # agent.green_time = max(5, int(np.max([agent.movements[x].green_time for x in agent.action.movements])))
+                    agent.action = agent.act(self.local_net, agent.state, time, lanes_count, eps=self.eps)                  
                     agent.green_time = 10
                     
                     if agent.action.ID != agent.phase.ID:

@@ -1,0 +1,45 @@
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R  "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/3.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/3.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/3.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/4.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/4.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/4x4/4.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/ny16/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/ny16/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/ny16/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+bsub -n 8 -W 24:00 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/ny196/1.config' --num_sim_steps 1800 --lr 0.0005 --num_episodes 150 --agents_type learning
+
+bsub -n 8 -W 24:00 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/ny196/1.config' --num_sim_steps 1800 --lr 0.0005 --num_episodes 150 --agents_type presslight
+
+bsub -n 8 -W 24:00 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/ny196/1.config' --num_sim_steps 1800 --lr 0.0005 --num_episodes 150 --agents_type hybrid

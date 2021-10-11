@@ -53,9 +53,44 @@ analytical_agent
    :special-members:
    :exclude-members: __dict__,__weakref__
 
+fixed_agent
+-----------
+.. automodule:: fixed_agent
+   :members:
+   :special-members:
+   :exclude-members: __dict__,__weakref__
+
+random_agent
+-----------
+.. automodule:: random_agent
+   :members:
+   :special-members:
+   :exclude-members: __dict__,__weakref__
+
+demand_agent
+-----------
+.. automodule:: demand_agent
+   :members:
+   :special-members:
+   :exclude-members: __dict__,__weakref__
+
 learning_agent
 -----------
 .. automodule:: learning_agent
+   :members:
+   :special-members:
+   :exclude-members: __dict__,__weakref__
+
+hybrid_agent
+-----------
+.. automodule:: hybrid_agent
+   :members:
+   :special-members:
+   :exclude-members: __dict__,__weakref__
+
+presslight_agent
+-----------
+.. automodule:: presslight_agent
    :members:
    :special-members:
    :exclude-members: __dict__,__weakref__
