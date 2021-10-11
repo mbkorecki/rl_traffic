@@ -58,6 +58,10 @@ for action in state_action_dict.keys():
     i += 1
         
 # plt.hist(actions, bins=100)
+
+plt.xlim([-1.5, 2])
+plt.ylim([-1, 2])
+
 plt.show()
 
 

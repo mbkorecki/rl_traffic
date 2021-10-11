@@ -201,3 +201,25 @@ class Logger:
         else: 
             torch.save(environ.local_net.state_dict(), self.log_path + '/time_q_net.pt')
             torch.save(environ.target_net.state_dict(), self.log_path + '/time_target_net.pt')
+
+
+    def plot_pressure(self, environ):
+        plot_avg = []
+        plot_std = []
+        for data in environ.log_pressure:
+            plot_avg.append(np.mean(data))
+            plot_std.append(np.std(data))
+            
+        # plt.errorbar(range(len(plot_avg)), plot_avg, yerr=plot_std)
+        plt.plot(plot_avg)
+        plt.savefig(self.log_path + '/avg_pressure.png')
+        plt.clf()
+
+        plt.plot(environ.log_pressure)
+        plt.savefig(self.log_path + '/partial_pressure.png')
+        plt.clf()
+
+        with open(self.log_path + "/" + "avg_pressure.pickle", "wb") as f:
+            pickle.dump(plot_avg, f)
+        with open(self.log_path + "/" + "partial_pressure.pickle", "wb") as f:
+            pickle.dump(environ.log_pressure, f)

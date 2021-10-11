@@ -124,6 +124,8 @@ for i_episode in range(num_episodes):
     
 logger.save_log_file(environ)
 logger.serialise_data(environ)
+logger.plot_pressure(environ)
+
 
 if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight' or environ.agents_type == 'policy':
     logger.save_measures_plots()

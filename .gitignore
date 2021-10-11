@@ -11,6 +11,11 @@ results*/
 **/memory.dill
 results*
 *results*
+/pca
+tikzpicture.txt
+bsub_cmds
+bsub_cmds_2
+project2.txt
 
 # C extensions
 *.so

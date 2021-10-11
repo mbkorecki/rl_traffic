@@ -1,3 +1,19 @@
+
+30.09
+
+paper questions:
+- figure 5 (convergence), is it good as it is or perhaps is it better to include only convergence for ny196 scenario?
+
+
+Saturday 25.09 [lost]
+
+- extract more data
+- block all lanes when outlane full
+- register overflow 
+- plot pressure over time
+
+
+
 Thursday 23.09
 
 \item [optional] a second source of heterogeneity - speed limits
@@ -50,6 +66,9 @@ Notes:
 - use state_action analyser to probe state action space of the old and new 4x4base model
 - learning models might be misled by the initial steps where there are no cars and rewards are very high?
 -where is the randomness coming from?
+
+
+
 
 Sat 18.09
 

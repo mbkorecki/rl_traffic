@@ -26,7 +26,7 @@ class Environment:
     The class Environment represents the environment in which the agents operate in this case it is a city
     consisting of roads, lanes and intersections which are controled by the agents
     """
-    def __init__(self, args, n_actions=9, n_states=44):
+    def __init__(self, args, n_actions=9, n_states=45):
         """
         initialises the environment with the arguments parsed from the user input
         :param args: the arguments input by the user
@@ -74,8 +74,6 @@ class Environment:
                 new_agent = Presslight_Agent(self.eng, ID=agent_id, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
             elif self.agents_type == 'fixed':
                 new_agent = Fixed_Agent(self.eng, ID=agent_id)
-            # elif self.agents_type == 'policy':
-            #     new_agent = Policy_Agent(self.eng, ID=agent_id, state_dim=n_states, in_roads=self.eng.get_intersection_in_roads(agent_id), out_roads=self.eng.get_intersection_out_roads(agent_id))
             elif self.agents_type == 'random':
                 new_agent = Random_Agent(self.eng, ID=agent_id)
             else:
@@ -98,30 +96,21 @@ class Environment:
         self.n_states = n_states
 
         if args.load:
-            self.local_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
+            self.local_net = DQN(self.n_states, self.n_actions, seed=2).to(self.device)
             self.local_net.load_state_dict(torch.load(args.load, map_location=torch.device('cpu')))
             self.local_net.eval()
             
-            self.target_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
+            self.target_net = DQN(self.n_states, self.n_actions, seed=2).to(self.device)
             self.target_net.load_state_dict(torch.load(args.load, map_location=torch.device('cpu')))
             self.target_net.eval()
         else:
-            self.local_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
-            self.target_net = DQN(n_states, self.n_actions, seed=2).to(self.device)
+            self.local_net = DQN(self.n_states, self.n_actions, seed=2).to(self.device)
+            self.target_net = DQN(self.n_states, self.n_actions, seed=2).to(self.device)
 
         self.optimizer = optim.Adam(self.local_net.parameters(), lr=args.lr, amsgrad=True)
         self.memory = ReplayMemory(self.n_actions, batch_size=args.batch_size)
 
         self.policy_memory = []
-
-        # self.seed = torch.manual_seed(2)
-        # hidden_sizes = [128, 64]
-        # self.logits_net = DPGN(sizes=[self.n_states]+hidden_sizes+[self.n_actions])
-        # self.pol_opt = Adam(self.logits_net.parameters(), lr=5e-4, amsgrad=True)
-
-        # self.value_net = DPGN(sizes=[self.n_states]+hidden_sizes+[1])
-        # self.val_opt = Adam(self.value_net.parameters(), lr=1e-3, amsgrad=True)
-
 
         self.agents = [x for x in self.agents if all(x.in_lanes_length.values()) > 0]
         self.agents = [x for x in self.agents if all(x.out_lanes_length.values()) > 0]
@@ -131,6 +120,7 @@ class Environment:
         
         print(len(self.agents))
 
+        self.log_pressure = []
 
 
         
@@ -145,9 +135,10 @@ class Environment:
         lanes_count = self.eng.get_lane_vehicle_count()
         veh_distance = self.eng.get_vehicle_distance()
         waiting_vehs = None
-
+        log_step_pressure = []
+        
         for agent in self.agents:
-            
+            log_step_pressure.append(agent.get_reward(lanes_count))
             agent.update_arr_dep_veh_num(self.eng, lane_vehs)
             
             if time % (10 + agent.clearing_time) == 0:
@@ -178,7 +169,8 @@ class Environment:
                     agent.set_phase(self.eng, agent.action)
                     agent.action_freq = time + agent.green_time
                     agent.action_type = "reward"
-
+                    
+        self.log_pressure.append(log_step_pressure)
         self.eng.next_step()
 
         
@@ -193,9 +185,13 @@ class Environment:
         veh_distance = self.eng.get_vehicle_distance()
         waiting_vehs = None
 
+        log_step_pressure = []
+        
         for agent in self.agents:
+            log_step_pressure.append(agent.get_reward(lanes_count))
+            
             if self.agents_type == "hybrid":
-                agent.update_arr_dep_veh_num(lane_vehs)
+                agent.update_arr_dep_veh_num(self.eng, lane_vehs)
 
             if time % agent.action_freq == 0:
                 if agent.action_type == "reward":
@@ -230,9 +226,8 @@ class Environment:
                     agent.action_type = "reward"
                     agent.action_freq = time + agent.green_time
 
-
+        self.log_pressure.append(log_step_pressure)
         if time % self.action_freq == 0: self.eps = max(self.eps-self.eps_decay,self.eps_end)
-        # if time % self.eps_update == 0: self.eps = max(self.eps*self.eps_decay,self.eps_end)
         self.eng.next_step()
 
     def demand_step(self, time, done):
@@ -267,119 +262,6 @@ class Environment:
                     agent.action_type = "act"
 
         self.eng.next_step()
-
-
-    # def policy_step(self, time, done):
-    #     """
-    #     represents a single step of the simulation for the policy gradient agent
-    #     :param time: the current timestep
-    #     :param done: flag indicating weather this has been the last step of the episode
-    #     """
-    #     lanes_count = self.eng.get_lane_vehicle_count()
-    #     lane_vehs = self.eng.get_lane_vehicles()
-    #     veh_distance = self.eng.get_vehicle_distance()
-    #     waiting_vehs = None
-
-    #     for agent in self.agents:
-    #         if time % agent.action_freq == 0:
-    #             if agent.action_type == "reward":
-    #                 reward = agent.get_reward(lanes_count)
-    #                 agent.ep_rews.append(reward)
-    #                 agent.total_rewards += agent.get_reward(lanes_count)
-    #                 agent.reward_count += 1
-    #                 agent.action_type = "act"
-
-    #             if agent.action_type == "act":
-
-    #                 agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
-    #                 agent.batch_obs.append(agent.state.copy())
-                    
-    #                 # agent.action = agent.act(torch.as_tensor(agent.state, dtype=torch.float32), agent.logits_net)
-    #                 agent.action = agent.act(torch.as_tensor(agent.state, dtype=torch.float32), self.logits_net)
-    #                 agent.batch_acts.append(agent.action.ID)
-
-    #                 agent.green_time = 10
-
-    #                 # reward = agent.get_reward(lanes_count)
-    #                 # agent.ep_rews.append(-reward)
-
-
-    #                 if agent.phase.ID != agent.action.ID:
-    #                     agent.update_wait_time(time, agent.action, agent.phase, lanes_count)
-    #                     agent.set_phase(self.eng, agent.clearing_phase)
-    #                     agent.action_freq = time + agent.clearing_time
-    #                     agent.action_type = "update"
-    #                 else:
-    #                     agent.action_freq = time + agent.green_time
-    #                     agent.action_type = "reward"
-
-    #             elif agent.action_type == "update":
-    #                agent.set_phase(self.eng, agent.action)
-    #                agent.action_freq = time + agent.green_time
-    #                agent.action_type = "reward"
-
-    #         if done:
-    #             # if episode is over, record info about episode               
-                
-    #             agent.ep_rews.append(0)
-
-    #             if len(agent.ep_rews) > 1:
-    #                 agent.batch_weights = agent.discount_cumsum(agent.ep_rews, agent.gamma)[:-1]
-                    
-    #                 with torch.no_grad():
-    #                     # value_loss = agent.value_net(torch.from_numpy(np.asarray(agent.batch_obs)).float().unsqueeze(0))
-    #                     value_loss = agent.value_net(torch.from_numpy(np.asarray(agent.batch_obs)).float().unsqueeze(0))
-
-    #                 rews = np.asarray(agent.ep_rews[:-1]).reshape(np.asarray(agent.ep_rews[:-1]).shape[0], 1)
-    #                 value_loss = value_loss.numpy()[0] + [0]
-
-    #                 deltas = rews + agent.gamma * value_loss[1:] - value_loss[:-1]
-    #                 adv = agent.discount_cumsum(deltas, agent.gamma * agent.lam)
-
-    #                 # value_loss = agent.discount_cumsum(agent.ep_rews, 0.99) - value_loss.numpy()[0]
-    #                 # value_loss = agent.ep_rews - value_loss.numpy()[0]
-    #                 # value_loss = agent.discount_cumsum(agent.ep_rews - value_loss.numpy()[0], agent.gamma)
-
-    #                 adv = (adv - adv.mean()) / adv.std()
-
-
-    #                 self.policy_memory = [(agent.batch_acts[:-1], agent.batch_obs[:-1], agent.batch_weights, adv)]
-                    
-    #                 self.act_memory = [item for sublist in self.policy_memory for item in sublist[0]]
-    #                 self.obs_memory = [item for sublist in self.policy_memory for item in sublist[1]]
-    #                 self.weight_memory = [item for sublist in self.policy_memory for item in sublist[2]]
-    #                 self.adv_memory = [item for sublist in self.policy_memory for item in sublist[3]]
-
-    #                 self.memory = [(act, obs, weight, adv) for act, obs, weight, adv in zip(self.act_memory, self.obs_memory, self.weight_memory, self.adv_memory)]
-    #                 random.shuffle(self.memory)
-    #                 self.act_memory, self.obs_memory, self.weight_memory, self.adv_memory = zip(*self.memory)
-
-    #                 # agent.pol_opt.zero_grad()
-    #                 self.pol_opt.zero_grad()
-    #                 batch_loss = agent.compute_loss(obs=torch.as_tensor(self.obs_memory, dtype=torch.float32),
-    #                                       act=torch.as_tensor(self.act_memory, dtype=torch.int32),
-    #                                       weights=torch.as_tensor(self.adv_memory, dtype=torch.float32),
-    #                                       net=self.logits_net
-    #                                       )
-    #                 batch_loss.backward()
-    #                 # agent.pol_opt.step()
-    #                 self.pol_opt.step()
-
-    #                 for t in range(1):                        
-    #                     agent.val_opt.zero_grad()
-    #                     value_loss = ((agent.value_net(torch.from_numpy(np.asarray(self.obs_memory)).float().unsqueeze(0)) -
-    #                                    torch.from_numpy(np.asarray(self.weight_memory).copy()).float().unsqueeze(0))**2).mean()
-    #                     value_loss.backward()
-    #                     agent.val_opt.step()
-
-    #                 agent.batch_obs = []          # for observations
-    #                 agent.batch_acts = []         # for actions
-    #                 agent.batch_weights = []      # for reward-to-go weighting in policy gradient
-    #                 agent.ep_rews = []            # list for rewards accrued throughout ep
-
-
-    #     self.eng.next_step()
-
 
     def reset(self):
         """
