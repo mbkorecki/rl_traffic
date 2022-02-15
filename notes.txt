@@ -1,0 +1,42 @@
+
+1. densities in the chinese scenarios are due to very long lanes 
+
+2.
+new/rl_traffic/src/presslight(1) -> presslight+alpha-ml
+
+3.
+maybe plot states against reward?
+
+4.
+make the synthetic scenario smaller and see what happens, 100m lanes
+4 synthetic configs should have different lane size
+
+semi-done
+2. alpha table:
+
+a10-5e4 & ? & ?
+a10-5e5 & 2687+-(88.9)
+a10-5e6 & 2634.0+-(96.35)
+a01+5e4 & 2665.0+-(75.58)
+a01+5e5 & 2575.0+-(58.77)
+a01+5e6 & 2440+-(110.81)
+
+3. ablation 
+
+PressLight & 
+PressLight + a-Exp & 
+GuidedLight - a-Exp & 
+GuidedLight &
+
+
+
+Experiments, folder alpha
+
+1. presslight normal 
+2. presslight + alpha exploration
+3. guidedlight - alpha exploration
+4. guidedlight - only alpha exploration
+5. guidedlight normal
+
+
+

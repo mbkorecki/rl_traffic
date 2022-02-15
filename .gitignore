@@ -11,6 +11,13 @@ results*/
 **/memory.dill
 results*
 *results*
+state_action*
+*state_action*
+*state_action*/
+/state_action
+state_action/
+state_action/*
+
 /pca
 tikzpicture.txt
 bsub_cmds

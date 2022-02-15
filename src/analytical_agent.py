@@ -24,7 +24,7 @@ class Analytical_Agent(Agent):
         self.out_roads = out_roads
         self.action_queue = queue.Queue()
         self.init_phases_vectors(eng)
-
+        
     def act(self, eng, time):
         """
         selects the next action - phase for the agent to select along with the time it should stay on for
@@ -35,10 +35,10 @@ class Analytical_Agent(Agent):
 
         self.update_clear_green_time(time)
         
-        self.stabilise(time)
-        if not self.action_queue.empty():
-            phase, green_time = self.action_queue.get()
-            return phase, int(np.ceil(green_time))
+        # self.stabilise(time)
+        # if not self.action_queue.empty():
+        #     phase, green_time = self.action_queue.get()
+        #     return phase, int(np.ceil(green_time))
 
         if all([x.green_time == 0 for x in self.movements.values()]):
                 return self.phase, 5
@@ -60,6 +60,7 @@ class Analytical_Agent(Agent):
             green_time = self.clearing_time
         else:
             green_time = max(2, int(np.max([self.movements[x].green_time for x in action.movements])))
+
             
         return action, green_time
 

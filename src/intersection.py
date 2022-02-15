@@ -182,3 +182,30 @@ class Phase:
         self.vector = None
         self.to_action = None
         
+
+
+class Lane:
+    def __init__(self, eng, ID=""):
+        self.ID = ID
+
+        self.dep_vehs_num = []
+        self.arr_vehs_num = []
+        self.prev_vehs = set()
+
+
+        self.length = eng.get_lane_length(self.ID)
+        
+
+    def update_flow_data(self, eng, lanes_vehs):
+        """
+        Updates the list containing the number vehicles that arrived and departed
+        :param lanes_vehs: a dictionary with lane ids as keys and number of vehicles as values
+        """
+        current_vehs = set()
+        current_vehs.update(lanes_vehs[self.ID])
+
+        dep_vehs = len(self.prev_vehs - current_vehs)
+        self.dep_vehs_num.append(dep_vehs)
+        self.arr_vehs_num.append(len(current_vehs) - (len(self.prev_vehs) - dep_vehs))        
+        self.prev_vehs = current_vehs
+

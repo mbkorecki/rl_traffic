@@ -15,8 +15,8 @@ class Hybrid_Agent(Learning_Agent):
     def __init__(self, eng, ID='', in_roads=[], out_roads=[]):
         super().__init__(eng, ID, in_roads, out_roads)
         self.action_queue = queue.Queue()
-        
-    def act(self, net_local, state, time, eps = 0):
+
+    def act(self, net_local, state, lanes_count, time, eps = 0):
         """
         generates the action to be taken by the agent
         :param net_local: the neural network used in the decision making process

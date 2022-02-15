@@ -1,0 +1,156 @@
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/1.config' --num_sim_steps 1800 --num_episodes 1 --agents_type analytical
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type analytical
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/3.config' --num_sim_steps 1800 --num_episodes 1 --agents_type analytical
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/4.config' --num_sim_steps 1800 --num_episodes 1 --agents_type analytical
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/ny16/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type analytical
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/ny196/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type analytical
+
+
+=============================
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/3.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/3.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/3.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/4.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/4.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4mount/4.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/ny16/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/ny16/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/ny16/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+
+
+bsub -n 8 -W 24:00 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/ny196/2.config' --num_sim_steps 1800 --lr 0.0005 --num_episodes 150 --agents_type learning
+
+bsub -n 8 -W 24:00 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/ny196/2.config' --num_sim_steps 1800 --lr 0.0005 --num_episodes 150 --agents_type presslight
+
+bsub -n 8 -W 24:00 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/ny196/2.config' --num_sim_steps 1800 --lr 0.0005 --num_episodes 150 --agents_type hybrid
+
+
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/hangzhou/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/hangzhou/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/hangzhou/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/jinan/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/jinan/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type learning
+
+bsub -n 8 -R "rusage[ngpus_excl_p=2]" python traffic_sim.py --sim_config '../scenarios/jinan/2.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type presslight
+
+
+
+=========
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --sim_config '../scenarios/4x4/1.config' --num_sim_steps 1800 --num_episodes 150 --lr 0.0005 --agents_type hybrid
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_hybrid/time_q_net.pt' --sim_config '../scenarios/4x4/1.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_hybrid_load/time_q_net.pt' --sim_config '../scenarios/ny196/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_presslight_load/time_q_net.pt' --sim_config '../scenarios/ny196/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_hybrid_load/time_q_net.pt' --sim_config '../scenarios/ny16/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_presslight_load/time_q_net.pt' --sim_config '../scenarios/ny16/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_hybrid_load/time_q_net.pt' --sim_config '../scenarios/4x4mount/4.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_presslight_load/time_q_net.pt' --sim_config '../scenarios/4x4mount/4.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_hybrid_load/time_q_net.pt' --sim_config '../scenarios/4x4mount/3.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_presslight_load/time_q_net.pt' --sim_config '../scenarios/4x4mount/3.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_hybrid_load/time_q_net.pt' --sim_config '../scenarios/4x4mount/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_ presslight_load/time_q_net.pt' --sim_config '../scenarios/4x4mount/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_hybrid_load/time_q_net.pt' --sim_config '../scenarios/4x4mount/1.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4_config1_presslight_load/time_q_net.pt' --sim_config '../scenarios/4x4mount/1.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+
+
+=========
+
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../results_paper2.2/train/4x4_config1_presslight/time_q_net.pt' --sim_config '../scenarios/4x4mount/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4mount_config2_hybrid/time_q_net.pt' --sim_config '../scenarios/4x4mount/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4mount_config1_presslight/q_net.pt' --sim_config '../scenarios/4x4mount/1.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4mount_config1_hybrid/q_net.pt' --sim_config '../scenarios/4x4mount/1.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4mount_config3_presslight/q_net.pt' --sim_config '../scenarios/4x4mount/3.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4mount_config3_hybrid/q_net.pt' --sim_config '../scenarios/4x4mount/3.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4mount_config4_presslight/time_q_net.pt' --sim_config '../scenarios/4x4mount/4.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../4x4mount_config4_hybrid/time_q_net.pt' --sim_config '../scenarios/4x4mount/4.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../ny16_config2_presslight/time_q_net.pt' --sim_config '../scenarios/ny16/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../ny16_config2_hybrid/q_net.pt' --sim_config '../scenarios/ny16/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0
+
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../ny196_config2_presslight(1)/time_q_net.pt' --sim_config '../scenarios/ny196/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type presslight --mode 'test' --eps_start 0 --eps_end 0
+
+
+bsub -n 8 -R "select[model==EPYC_7742]" -R "rusage[ngpus_excl_p=2]" -R "rusage[mem=2048]"  -R "select[gpu_model0==GeForceRTX2080Ti]" python traffic_sim.py --load '../ny196_config2_hybrid/time_q_net.pt' --sim_config '../scenarios/ny196/2.config' --num_sim_steps 1800 --num_episodes 1 --agents_type hybrid --mode 'test' --eps_start 0 --eps_end 0

@@ -73,13 +73,20 @@ class Logger:
 
         with open(self.log_path + "/" + "memory.dill", "wb") as f:
             dill.dump(environ.memory.memory, f)
-
+        with open(self.log_path + "/" + "stops.pickle", "wb") as f:
+            pickle.dump(environ.stops, f)
+        with open(self.log_path + "/" + "speeds.pickle", "wb") as f:
+            pickle.dump(environ.speeds, f) 
+        with open(self.log_path + "/" + "agent_history.dill", "wb") as f:
+            pickle.dump(environ.agent_history, f)
         with open(self.log_path + "/" + "waiting_time.pickle", "wb") as f:
             pickle.dump(waiting_time_dict, f)
             
         with open(self.log_path + "/" + "agents_rewards.pickle", "wb") as f:
-            pickle.dump(reward_dict, f) 
-
+            pickle.dump(reward_dict, f)
+            
+        with open(self.log_path + "/" + "mfd.pickle", "wb") as f:
+            pickle.dump(environ.mfd_data, f) 
 
         if environ.agents_type == 'learning' or environ.agents_type == 'hybrid' or environ.agents_type == 'presslight' or environ.agents_type == 'policy':
             with open(self.log_path + "/" + "episode_rewards.pickle", "wb") as f:

@@ -11,6 +11,7 @@ from torch.distributions.categorical import Categorical
 from torch.optim import Adam
 
 from dqn import DQN, ReplayMemory, optimize_model
+from intersection import Lane
 from learning_agent import Learning_Agent
 from analytical_agent import Analytical_Agent
 from demand_agent import Demand_Agent
@@ -18,6 +19,23 @@ from hybrid_agent import Hybrid_Agent
 from presslight_agent import Presslight_Agent
 from fixed_agent import Fixed_Agent
 from random_agent import Random_Agent
+
+
+def get_mfd_data(time, lanes_count, lanes):
+    flow = []
+    density = []
+
+    for lane in lanes:
+        if time >= 60:
+            f = np.sum(lane.arr_vehs_num[time-60: time]) / 60
+        else:
+            f = np.sum(lane.arr_vehs_num[0: time]) / time
+        d = lanes_count[lane.ID] / lane.length
+            
+        flow.append(f)
+        density.append(d)
+
+    return (flow, density)
 
 class Environment:
     """
@@ -44,6 +62,8 @@ class Environment:
         
         self.eps = self.eps_start
 
+        self.mfd = args.mfd
+        
         self.agents = []
 
         self.agents_type = args.agents_type
@@ -113,12 +133,22 @@ class Environment:
 
         for agent in self.agents:
             agent.init_neighbours(self.agents)
-        
+
+
+        self.lanes = []
+        for lane_id in self.eng.get_lane_vehicle_count().keys():
+            self.lanes.append(Lane(self.eng, ID=lane_id))
+
         print(len(self.agents))
 
         self.log_pressure = []
+        self.mfd_data = []
+        
+        self.agent_history = []
+        self.speeds = []
+        self.stops = []
 
-
+        self.stopped = {}
         
     def analytical_step(self, time, done):
         """
@@ -127,12 +157,42 @@ class Environment:
         :param done: flag indicating weather this has been the last step of the episode, used for learning, here for interchangability of the two steps
         """
         print(time)
+
+        veh_ids = self.eng.get_vehicles()
+        speeds = []
+        stops = 0
+        
+        for veh_id in veh_ids:
+            speed = self.eng.get_vehicle_info(veh_id)['speed']
+            speeds.append(float(speed))
+            
+            if float(speed) <= 0.1 and veh_id not in self.stopped.keys():
+                self.stopped.update({veh_id : 1})
+                stops += 1
+            elif float(speed) > 0.1 and veh_id in self.stopped.keys():
+                self.stopped.pop(veh_id)
+
+        self.speeds.append(np.mean(speeds))
+        self.stops.append(stops)
+        
         lane_vehs = self.eng.get_lane_vehicles()
         lanes_count = self.eng.get_lane_vehicle_count()
         veh_distance = self.eng.get_vehicle_distance()
         waiting_vehs = None
         log_step_pressure = []
+
+        self.flow = []
+        self.density = []
         
+        for lane in self.lanes:
+            lane.update_flow_data(self.eng, lane_vehs)
+        flow, density = get_mfd_data(time, lanes_count, self.lanes)
+        if flow != None and density != None and flow != [] and density != []:
+            self.flow += flow
+            self.density += density
+        if self.flow != [] and self.density !=[]:
+            self.mfd_data.append((self.density, self.flow))
+            
         for agent in self.agents:
             log_step_pressure.append(agent.get_reward(lanes_count))
             agent.update_arr_dep_veh_num(self.eng, lane_vehs)
@@ -140,18 +200,20 @@ class Environment:
             if time % (10 + agent.clearing_time) == 0:
                 agent.total_rewards += agent.get_reward(lanes_count)
                 agent.reward_count += 1
+                
             if time % agent.action_freq == 0:
                 if agent.action_type == "reward":
                     next_state = torch.FloatTensor(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance)).unsqueeze(0)
-                    self.memory.add(agent.state, agent.action.ID, 0, next_state, False)                    
+                    self.memory.add(agent.state, agent.action.ID, 0, next_state, False)
                     agent.action_type = "act"
                                     
                 if agent.action_type == "act":
                     agent.action, agent.green_time = agent.act(self.eng, time)
-               
+                    agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
+                    if agent.ID == 'intersection_2_1':
+                        self.agent_history.append((agent.state, agent.action))
                     
                     if agent.phase.ID != agent.action.ID:
-                        agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
                         agent.update_wait_time(time, agent.action, agent.phase, lanes_count)
                         agent.set_phase(self.eng, agent.clearing_phase)
                         agent.action_freq = time + agent.clearing_time
@@ -159,13 +221,15 @@ class Environment:
                        
                     else:
                         agent.action_freq = time + agent.green_time
+                        agent.action_type = "reward"
 
 
                 elif agent.action_type == "update":
                     agent.set_phase(self.eng, agent.action)
                     agent.action_freq = time + agent.green_time
                     agent.action_type = "reward"
-                    
+
+
         self.log_pressure.append(log_step_pressure)
         self.eng.next_step()
 
@@ -176,17 +240,47 @@ class Environment:
         :param time: the current timestep
         :param done: flag indicating weather this has been the last step of the episode
         """
+
+        veh_ids = self.eng.get_vehicles()
+        speeds = []
+        stops = 0
+        
+        for veh_id in veh_ids:
+            speed = self.eng.get_vehicle_info(veh_id)['speed']
+            speeds.append(float(speed))
+            
+            if float(speed) <= 0.1 and veh_id not in self.stopped.keys():
+                self.stopped.update({veh_id : 1})
+                stops += 1
+            elif float(speed) > 0.1 and veh_id in self.stopped.keys():
+                self.stopped.pop(veh_id)
+
+        self.speeds.append(np.mean(speeds))
+        self.stops.append(stops)
+        
         lanes_count = self.eng.get_lane_vehicle_count()
         lane_vehs = self.eng.get_lane_vehicles()
         veh_distance = self.eng.get_vehicle_distance()
         waiting_vehs = None
 
         log_step_pressure = []
+
+        self.flow = []
+        self.density = []
+
+        for lane in self.lanes:
+            lane.update_flow_data(self.eng, lane_vehs)
+        flow, density = get_mfd_data(time, lanes_count, self.lanes)
+        if flow != None and density != None and flow != [] and density != []:
+            self.flow += flow
+            self.density += density
+        if self.flow != [] and self.density !=[]:
+            self.mfd_data.append((self.density, self.flow))
         
         for agent in self.agents:
             log_step_pressure.append(agent.get_reward(lanes_count))
             
-            if self.agents_type == "hybrid":
+            if self.agents_type == "hybrid" or self.mfd == True:
                 agent.update_arr_dep_veh_num(self.eng, lane_vehs)
 
             if time % agent.action_freq == 0:
@@ -202,8 +296,10 @@ class Environment:
                                     
                 if agent.action_type == "act":
                     agent.state = np.asarray(agent.observe(self.eng, time, lanes_count, lane_vehs, veh_distance))
-                    agent.action = agent.act(self.local_net, agent.state, time, lanes_count, eps=self.eps)                  
+                    agent.action = agent.act(self.local_net, agent.state, lanes_count, time, eps=self.eps)                  
                     agent.green_time = 10
+                    if agent.ID == 'intersection_2_1':
+                        self.agent_history.append((agent.state, agent.action))
                     
                     if agent.action.ID != agent.phase.ID:
                         agent.update_wait_time(time, agent.action, agent.phase, lanes_count)
@@ -222,6 +318,7 @@ class Environment:
 
         self.log_pressure.append(log_step_pressure)
         if time % self.action_freq == 0: self.eps = max(self.eps-self.eps_decay,self.eps_end)
+
         self.eng.next_step()
 
     def demand_step(self, time, done):
@@ -230,10 +327,40 @@ class Environment:
         :param time: the current timestep
         :param done: flag indicating weather this has been the last step of the episode, used for learning, here for interchangability of the two steps
         """
+
+        # veh_ids = self.eng.get_vehicles()
+        # speeds = []
+        # stops = 0
+        
+        # for veh_id in veh_ids:
+        #     speed = self.eng.get_vehicle_info(veh_id)['speed']
+        #     speeds.append(float(speed))
+            
+        #     if float(speed) <= 0.1 and veh_id not in self.stopped.keys():
+        #         self.stopped.update({veh_id : 1})
+        #         stops += 1
+        #     elif float(speed) > 0.1 and veh_id in self.stopped.keys():
+        #         self.stopped.pop(veh_id)
+
+        # self.speeds.append(np.mean(speeds))
+        # self.stops.append(stops)
+        
         print(time)
         lanes_count = self.eng.get_lane_vehicle_count()
+        
+        lane_vehs = self.eng.get_lane_vehicles()
+        self.flow = 0
+        self.density = 0
+        # for agent in self.agents:
+        #     agent.update_arr_dep_veh_num(self.eng, lane_vehs)
+        #     flow, density = agent.get_flow_density(time, lanes_count)
+        #     self.flow += flow
+        #     self.density += density
 
-        for agent in self.agents:
+        # if self.density != 0 and self.flow != 0:
+        #     self.mfd_data.append((self.density/len(self.agents), self.flow/len(self.agents)))
+       
+        for agent in self.agents:    
             if time % agent.action_freq == 0:
                 if agent.action_type == "act":
                     agent.total_rewards += agent.get_reward(lanes_count)
@@ -269,6 +396,9 @@ class Environment:
             agent.total_rewards = 0
             agent.reward_count = 0
             agent.action_type = 'act'
+
+
+
 
 
 

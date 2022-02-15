@@ -19,86 +19,105 @@ def get_cmap(n, name='hsv'):
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
 
+def draw_pca_analysis(ax, path):
+    with open(path, "rb") as f:
+        memory = dill.load(f)
+
+    actions = []
+    states = []
+    rewards = []
+
+    state_action_dict = {}
+    state_reward_dict = {}
+
+    # for elem in memory:
+    #     actions.append(elem.action)
+    #     states.append(elem.state)
+    #     rewards.append(elem.reward)
+    #     if elem.action not in state_action_dict.keys():
+    #         state_action_dict.update({elem.action : [elem.state]})
+    #     else:
+    #         state_action_dict[elem.action].append(elem.state)
+
+
+    for elem in memory:
+        actions.append(elem[1].ID)
+        states.append(elem[0])
+        if elem[1].ID not in state_action_dict.keys():
+            state_action_dict.update({elem[1].ID : [elem[0]]})
+        else:
+            state_action_dict[elem[1].ID].append(elem[0])
+
+    
+    pca_state_action_dict = {}
+    pca = PCA(n_components=2)
+
+    # ax = plt.axes()
+    print(len(states))
+
+    i = 0
+
+    all_states = [state_action_dict[x] for x in state_action_dict.keys()]
+    all_states = [x for sub in all_states for x in sub]
+
+    pca.fit(all_states)
+    print(pca.explained_variance_ratio_)
+
+    for action in range(10):
+        # print(action, len(state_action_dict[action]))
+        if action in state_action_dict.keys():
+            state_action_dict.update({action : pca.transform(state_action_dict[action])})
+            # state_action_dict.update({action : pca.fit_transform(state_action_dict[action])})
+
+            x,y = zip(*state_action_dict[action])
+
+            ax.scatter(x, y, s=10, color=cmap(action), alpha=0.5, label='Action ' + str(action))
+        
+            ax.set_xlabel('Projection PC1 ' + "({:.2f})".format(pca.explained_variance_ratio_[0]))
+            ax.set_ylabel('Projection PC2 ' + "({:.2f})".format(pca.explained_variance_ratio_[1]))
+        
+
+
 args = parse_args()
+paths = ['../state_action/ny196_config1_analytical/agent_history.dill',
+         '../state_action/ny196_config1_hybrid_load(1)/agent_history.dill',
+         '../state_action/ny196_config1_presslight_load(1)/agent_history.dill']
+names = ['Analytic', 'GuidedLight', 'PressLight']
+fig, axes = plt.subplots(1,len(paths), constrained_layout=True, sharex=True, sharey=True)
 
-with open(args.memory_file, "rb") as f:
-    memory = dill.load(f)
+cmap = get_cmap(10)
 
-actions = []
-states = []
-rewards = []
 
-state_action_dict = {}
-state_reward_dict = {}
+# for (j, path), name in zip(enumerate(paths), names):
+#     draw_pca_analysis(axes[0, j], path)
+#     axes[0,j].set_title(name)
+#     if j == 0 or j == 1:
+#         axes[0,j].set_xlim([-1, 1.5])
+#         axes[0,j].set_ylim([-1.1, 1.5])
 
-for elem in memory:
-    actions.append(elem.action)
-    states.append(elem.state)
-    rewards.append(elem.reward)
-    if elem.action not in state_action_dict.keys():
-        state_action_dict.update({elem.action : [elem.state]})
-    else:
-        state_action_dict[elem.action].append(elem.state)
-        
-pca_state_action_dict = {}
-pca = PCA(n_components=2)
+# # fig.supxlabel('Projection PC1')
+# # fig.supylabel('Projection PC2')
+# axes[0,2].legend(loc="upper center", prop={'size': 6})
+# plt.show()
 
-fig = plt.figure()
-# ax = plt.axes(projection='3d')
-ax = plt.axes()
-print(len(states))
 
-i = 0
-cmap = get_cmap(9)
-for action in state_action_dict.keys():    
-    state_action_dict.update({action : pca.fit_transform(state_action_dict[action])})
-    x,y = zip(*state_action_dict[action])
+def draw_histogram(ax, path):
+    with open(path, "rb") as f:
+        memory = dill.load(f)
+    actions = []
+    for elem in memory:
+        actions.append(elem[1].ID)
 
-    ax.scatter(x, y, s=2, color=cmap(i))
-    i += 1
-        
-# plt.hist(actions, bins=100)
+    _, _, patches = ax.hist(actions, bins=np.arange(0,10)-0.5)
+    ax.set_xticks(range(0,9))
+    for i, patch in enumerate(patches):
+        patch.set_facecolor(cmap(i))
 
-plt.xlim([-1.5, 2])
-plt.ylim([-1, 2])
+
+for (j, path), name in zip(enumerate(paths), names):
+    draw_histogram(axes[j], path)
+    axes[j].set_title(name)
+
+axes[1].set_xlabel('Actions')
 
 plt.show()
-
-
-# min_reward = min(rewards)
-# max_reward = max(rewards)
-
-# bins = 10
-
-# increment = (min_reward - max_reward) / bins
-
-# edge_values = []
-# for i in range(bins):
-#     edge_values.append((i+1) * increment)
-# edge_values = list(reversed(edge_values))
-# edge_values = edge_values[:-1]
-# edge_values.append(0)
-# cat_rewards = []
-
-# for reward in rewards:
-#     for i, val in enumerate(edge_values):
-#         if reward <= val:
-#             cat_rewards.append(i)
-#             break
-
-# for state, reward in zip(states, cat_rewards):
-#     if reward not in state_reward_dict.keys():
-#         state_reward_dict.update({reward : [state]})
-#     else:
-#         state_reward_dict[reward].append(state)
-
-# cmap = get_cmap(10)
-# i = 0
-# for reward in state_reward_dict.keys():
-#     if len(state_reward_dict[reward]) > 2:
-#         state_reward_dict.update({reward : pca.fit_transform(state_reward_dict[reward])})
-#         x,y = zip(*state_reward_dict[reward])
-
-#         plt.scatter(x, y, s=2, color=cmap(i))
-#     i += 1
-# plt.show()

@@ -42,6 +42,7 @@ def parse_args():
     parser.add_argument("--load", default=None, type=str, help="path to the model to be loaed")
     parser.add_argument("--mode", default='train', type=str, help="mode of the run train/test")
     parser.add_argument("--replay", default=False, type=bool, help="saving replay")
+    parser.add_argument("--mfd", default=True, type=bool, help="saving mfd data")
 
     return parser.parse_args()
 

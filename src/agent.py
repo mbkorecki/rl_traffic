@@ -230,3 +230,33 @@ class Agent:
         for movement in self.movements.values():
             green_time = movement.get_green_time(time, self.phase.movements)
             movement.green_time = green_time
+
+
+    # def get_flow_density(self, time, lanes_count):
+        # datapoints = []
+        # for move in self.movements.values():
+        #     density = lanes_count[move.in_lanes[0]] / move.in_length
+        #     if time == 0:
+        #         flow = 0
+        #     else:
+        #         flow = (move.get_arr_veh_num(time-60, time) / 60
+        
+        #     datapoints.append((density, flow))
+        # return datapoints
+
+    # def get_flow_density(self, time, lanes_count):
+    #     flow = []
+    #     density = []
+    #     for move in self.movements.values():
+    #         if time != 0:
+    #             if time >= 60:
+    #                 f = move.get_arr_veh_num(time-60, time) / 60
+    #             else:
+    #                 f = move.get_arr_veh_num(0, time) / time
+
+    #             flow.append(f)
+            
+    #         density.append(f / move.max_speed)
+    #         # density.append(lanes_count[move.in_lanes[0]] / move.in_length)
+
+    #     return (np.mean(flow), np.mean(density))
